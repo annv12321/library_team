@@ -4,9 +4,6 @@ create table Category(
 	category_name char(10) not null,
 	checkout_period integer not null,
 	max_books_out integer not null,
-	check(category_name in 'Peon', 'BigCheese'),
-	check(checkout_period in '14', '1000'),
-	check(max_books_out in '5', '100')
 );
 
 create table Borrower(
