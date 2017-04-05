@@ -93,7 +93,8 @@ create trigger no_renew_if_overdue
 	mode db2sql
 	when (old_date.date_due < current_date)
 	signal sqlstate value '71001'
-	set message_text = 'Cannot renew when overdue.';
+	set message_text = 'Cannot renew when overdue.'
+	end;
 
 create trigger create_fine
 	after delete on Checked_out
