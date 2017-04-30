@@ -108,9 +108,24 @@ public class Database
      */
     public String getBorrowerName(String borrowerID) throws ErrorMessage
     {
-// STUB
-if (borrowerID.equals("BAD")) throw new ErrorMessage("Error message test getBorrowerName");
-return "??? name ???";
+        String last, first;
+        try {
+            #sql { select last_name, first_name
+                into :last, :first
+                from borrower
+                where borrower_id = :borrowerID
+            };
+            return last + " " + first;
+        }
+        catch(SQLException e) {
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally {
+            rollback();
+        }
     }
 
     /** Check out a book.
