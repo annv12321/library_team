@@ -154,6 +154,7 @@ public class Database
                             on category.category_name = borrower.category_name
                             where borrower.borrower_id = :borrowerID) days)
             };
+            #sql { commit };
             return dateDue;
         }
         catch(SQLException e) {
@@ -178,13 +179,39 @@ public class Database
      */
     public void returnBook(String callNumber, short copyNumber) throws ErrorMessage
     {
-// STUB
-if (callNumber.equals("BAD")) throw new ErrorMessage("Error message test returnBook");
-System.out.println("Return " + callNumber + " " + copyNumber);
-// Days late should be calculated from the checkout record in the database -
-// this uses the copyNumber to facilitate testing - a book with a copy number
-// greater than 10 is considered late that many days.
-int daysLate = (copyNumber > 10) ? copyNumber : 0;
+        try {
+            int dateDue;
+            String borrowerID;
+            String bookTitle;
+            #sql { select date_due, borrowerID
+                into :daysDue, :borrowerID
+                from checked_out
+                where call_number = :callNumber and copy_number = :copyNumber
+            };
+            #sql {
+                select title
+                    into :bookTitle
+                    form book_info
+                    where call_number = :callNumber
+            };
+            date currentDate = new date();
+            if (currentDate + deltaDate > dateDue) {
+                #sql { insert into fine
+                    values(:borrowerID, bookTitle, dateDue, currentDate, 1)
+                };
+            }
+            #sql { delete from checked_out
+                where :call_number = call_number and copy_number = :copyNumber
+            };
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
+                throw new ErrorMessage("Book already checked out");
+            else
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
 
 // The following line should be incorporated into your code, to be executed
 // if the book is late (after calculating daysLate in the database, of course),
