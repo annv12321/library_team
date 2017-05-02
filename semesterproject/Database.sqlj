@@ -183,21 +183,26 @@ public class Database
             int dateDue;
             String borrowerID;
             String bookTitle;
-            #sql { select date_due, borrowerID
-                into :daysDue, :borrowerID
+            #sql { select date_due, borrower_id
+                into :dateDue, :borrowerID
                 from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
             #sql {
                 select title
                     into :bookTitle
-                    form book_info
+                    from book_info
                     where call_number = :callNumber
             };
             date currentDate = new date();
-            if (currentDate + deltaDate > dateDue) {
+            int daysLate = currentDate + deltaDate - dateDue;
+            if (daysLate > 0) {
+                BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
+                    setScale(2, BigDecimal.ROUND_HALF_UP);
                 #sql { insert into fine
-                    values(:borrowerID, bookTitle, dateDue, currentDate, 1)
+                    values(:borrowerID, :bookTitle, :dateDue, :currentDate, :fineAmount)
+                throw new ErrorMessage("Book is overdue " + daysLate + " days " +
+                    "- a fine of $" + fineAmount + " has been assessed");
                 };
             }
             #sql { delete from checked_out
@@ -212,21 +217,6 @@ public class Database
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
-
-// The following line should be incorporated into your code, to be executed
-// if the book is late (after calculating daysLate in the database, of course),
-// and before inserting a new row into the Fine table.   It uses the symbolic
-// constant DAILY_FINE_RATE in class Fine - which gives the rate in cents,
-// whereas the Fine table in the database holds the amount in dollars.
-
-        BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
-            setScale(2, BigDecimal.ROUND_HALF_UP);
-
-// Include the following at the very end of your code
-
-        if (daysLate > 0)
-            throw new ErrorMessage("Book is overdue " + daysLate + " days " +
-                "- a fine of $" + fineAmount + " has been assessed");
     }
 
     /** Renew a book  If there is any problem, an appropriate error
@@ -241,6 +231,41 @@ public class Database
      */
     public Date renewBook(String callNumber, short copyNumber) throws ErrorMessage
     {
+        if (daysLate > 0)
+        {
+            rollback();
+            throw new ErrorMessage("Book is overdue " + daysLate +
+                " days and cannot be renewed");
+        }
+
+return new Date(calendar.getTime().getTime());
+        try {
+            int checkoutPeriod;
+            date currentDate = new date() + deltaDate;
+            #sql { select date_due
+                into :daysDue
+                from checked_out
+                where call_number = :callNumber and copy_number = :copyNumber
+            };
+            #sql { select category.checkout_period
+                into :checkoutPeriod
+                from category join borrower
+                on category.category_name = borrower.category_name
+                where borrower.borrower_id =
+                    (select borrower_id
+                        from checkedout
+                        where call_number = callNumber and copy_number = copyNumber) days
+            };
+            #sql { update checked_out
+                set date_due = :currentDate +
+                where call_number = callNumber and copy_number = copyNumber
+            };
+            #sql { commit };
+            return
+        }
+        catch(SQLException e) {
+            rollback();
+        }
 // STUB
 if (callNumber.equals("BAD")) throw new ErrorMessage("Error message test renewBook");
 System.out.println("Renew " + callNumber + " " + copyNumber);
