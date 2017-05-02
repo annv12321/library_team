@@ -143,16 +143,19 @@ public class Database
                              String callNumber,
                              short copyNumber) throws ErrorMessage
     {
-        date dateDue;
         try {
-            #sql {
-                insert into checked_out
-                    values(:callNumber, :copyNumber, :borrowerID, current date + :deltaDate days +
-                        (select category.checkout_period
-                            into :dateDue
-                            from category join borrower
-                            on category.category_name = borrower.category_name
-                            where borrower.borrower_id = :borrowerID) days)
+            int checkoutPeriod;
+            #sql { select checkout_period
+                into :checkoutPeriod
+                from category join borrower
+                on category.category_name = borrower.category_name
+                where borrower.borrower_id = :borrowerID
+            };
+            Calendar cal = Calendar.getInstance();
+            cal.add(cal.DAY_OF_YEAR, deltaDate + checkoutPeriod);
+            Date dateDue = new Date(cal.getTimeInMillis());
+            #sql { insert into checked_out
+                values(:callNumber, :copyNumber, :borrowerID, :dateDue)
             };
             #sql { commit };
             return dateDue;
@@ -194,7 +197,13 @@ public class Database
                     from book_info
                     where call_number = :callNumber
             };
-            int daysLate = new date() + deltaDate - dateDue;
+            Calendar now = Calendar.getInstance();
+            now.add(now.DAY_OF_YEAR, deltaDate);
+            String dd = dateDue.toString();
+            Calendar old = Calendar.getInstance();
+            old.set(Integer.valueOf(dd.substring(0,4)), Integer.valueOf(dd.substring(5,7)), Integer.valueOf(dd.substring(8,10)));
+            int daysLate = now.compareTo(old);
+            Date currentDate = new Date(now.getTimeInMillis());
             if (daysLate > 0) {
                 BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
                     setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -205,7 +214,7 @@ public class Database
                 };
             }
             #sql { delete from checked_out
-                where :call_number = call_number and copy_number = :copyNumber
+                where call_number = :callNumber and copy_number = :copyNumber
             };
             #sql { commit };
         }
@@ -233,19 +242,23 @@ public class Database
         try {
             int checkoutPeriod;
             Date dateDue;
-            String borrowerID
+            String borrowerID;
             #sql { select date_due, borrower_id
-                into :dateDue, :borrower_id
+                into :dateDue, :borrowerID
                 from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
-            int daysLate = new date() + deltaDate - dateDue;
+            Calendar now = Calendar.getInstance();
+            now.add(now.DAY_OF_YEAR, deltaDate);
+            String dd = dateDue.toString();
+            Calendar old = Calendar.getInstance();
+            old.set(Integer.valueOf(dd.substring(0,4)), Integer.valueOf(dd.substring(5,7)), Integer.valueOf(dd.substring(8,10)));
+            int daysLate = now.compareTo(old);
             if (daysLate > 0)
             {
                 rollback();
                 throw new ErrorMessage("Book is overdue " + daysLate +
                     " days and cannot be renewed");
-                return dateDue;
             }
             else {
                 #sql { select category.checkout_period
@@ -254,13 +267,15 @@ public class Database
                     on category.category_name = borrower.category_name
                     where borrower.borrower_id = :borrowerID
                 };
-                Date newDateDue = new date() + deltaDate + checkoutPeriod;
+                Calendar cal = Calendar.getInstance();
+                cal.add(cal.DAY_OF_YEAR, deltaDate + checkoutPeriod);
+                Date newDateDue = new Date(cal.getTimeInMillis());
                 #sql { update checked_out
                     set date_due = :newDateDue
                     where call_number = callNumber and copy_number = copyNumber
                 };
                 #sql { commit };
-                return newDateDue
+                return newDateDue;
             }
         }
         catch(SQLException e) {
