@@ -886,16 +886,25 @@ public class Database
                             List phones,
                             String category) throws ErrorMessage
     {
-// STUB
-if (borrowerID.equals("BAD")) throw new ErrorMessage("Error message test addBorrower");
-Object [] newInformation = new Object[5];
-newInformation[0] = borrowerID;
-newInformation[1] = lastName;
-newInformation[2] = firstName;
-newInformation[3] = phones;
-newInformation[4] = category;
-// STUB
-System.out.println("addBorrower(" + toString(newInformation) + ") called");
+        try {
+            #sql { insert into borrower
+                values(:borrowerID, :lastName, :firstName, :category)
+            };
+            for (int i = 0; i < phones.size(); i++) {
+                String number = phones.get(i).toString();
+                #sql { insert into borrower_phone
+                    values(:borrowerID, :number)
+                };
+            }
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
+                throw new ErrorMessage("Borrower already exists");
+            else
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
     }
 
     /** Get information on an existing borrower about to be edited or deleted
