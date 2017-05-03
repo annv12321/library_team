@@ -209,9 +209,9 @@ public class Database
                     setScale(2, BigDecimal.ROUND_HALF_UP);
                 #sql { insert into fine
                     values(:borrowerID, :bookTitle, :dateDue, :currentDate, :fineAmount)
+                };
                 throw new ErrorMessage("Book is overdue " + daysLate + " days " +
                     "- a fine of $" + fineAmount + " has been assessed");
-                };
             }
             #sql { delete from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
@@ -272,7 +272,7 @@ public class Database
                 Date newDateDue = new Date(cal.getTimeInMillis());
                 #sql { update checked_out
                     set date_due = :newDateDue
-                    where call_number = callNumber and copy_number = copyNumber
+                    where call_number = :callNumber and copy_number = :copyNumber
                 };
                 #sql { commit };
                 return newDateDue;
@@ -638,18 +638,18 @@ public class Database
 
         try
         {
-            short accessionNumber = 0;
+            short barCode = 0;
             String title = null, format = null;
 
-            #sql { select accession_number, title, format
-                    into :accessionNumber, :title, :format
+            #sql { select barcode, title, format
+                    into :barCode, :title, :format
                     from Book join Book_info
                         on Book.call_number = Book_info.call_number
                     where Book.call_number = :callNumber and
                           Book.copy_number = :copyNumber
                  };
 
-            values[2] = "" + accessionNumber;
+            values[2] = "" + barCode;
             values[3] = title;
             values[5] = format;
 
