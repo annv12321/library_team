@@ -86,29 +86,6 @@ create table Fine(
 			on delete cascade
 );
 
--- create trigger no_renew_if_overdue
--- 	before update of date_due on Checked_out
--- 		referencing OLD as old_date
--- 	for each row
--- 	mode db2sql
--- 	when (old_date.date_due < current_date)
--- 	signal sqlstate value '71001'
--- 	set message_text = 'Cannot renew when overdue.';
-
--- create trigger create_fine
--- 	after delete on Checked_out
--- 	referencing OLD as old_checkout
--- 	for each row
--- 	mode db2sql
--- 	when (old_checkout.date_due < current_date)
--- 		insert into Fine values(
--- 			old_checkout.borrower_id,
--- 			(select Book_info.title from Book_info
--- 				where Book_info.call_number = old_checkout.call_number),
--- 			old_checkout.date_due,
--- 			current_date,
--- 			'1.00');    -- We didn't know how much to assess. Not in requirements.
-
 create trigger max_checkedout
 	no cascade before insert on Checked_out
 	referencing NEW as new_checkout

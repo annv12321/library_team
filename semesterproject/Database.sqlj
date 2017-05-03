@@ -920,17 +920,29 @@ public class Database
      */
     public Object [] getBorrowerInformation(String borrowerID) throws ErrorMessage
     {
-        List originalPhones = new ArrayList();
-        Object [] values = new Object[5];
-        values[0] = borrowerID;
-// STUB
-if (borrowerID.equals("BAD")) throw new ErrorMessage("Error message test getBorrowerInformation");
-values[1] = "Aardvark";
-values[2] = "Anthony";
-originalPhones.add("123-4567"); originalPhones.add("555-1212");
-        values[3] = originalPhones;
-values[4] = "Big Cheese";
-        return values;
+        try {
+            String lastName, firstName, categoryName;
+            List originalPhones = new ArrayList();
+            Object [] values = new Object[5];
+            values[0] = borrowerID;
+            #sql { select phone
+                into :originalPhones
+                where borrower_id = :borrowerID
+            };
+            values[5] = originalPhones;
+            #sql { select last_name, first_name, category_name
+                into values[1], values[2], values[3]
+                from borrower
+                where borrower_id = :borrowerID
+            };
+            return values;
+        }
+        catch(SQLException e) {
+            throw new errorMessage("Unexcepted error message " + e.getMessage());
+        }
+        finally {
+            rollback();
+        }
     }
 
     /** Update stored information about a borrower
@@ -1189,8 +1201,39 @@ stream.println("Book Copies report");
      */
     public void keywordsReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Book Keywords report");
+        try
+        {
+            BookKeywordsReportCursor cursor;
+
+            #sql cursor = { select keyword, book_info.call_number, title
+                from book_info join book_keyword
+                on book_info.call_number = book_keyword.call_number
+                order by keyword, book.call_number
+            };
+
+            String [] BOOK_KEYWORDS_REPORT_HEADINGS =
+                { "Keyword", "Call Number", "Title" };
+            int [] BOOK_KEYWORDS_REPORT_COLUMN_WIDTHS =
+                { 10, 30, 30 };
+
+            produceReport(stream,
+                          "Book Keywords Report",
+                          BOOK_KEYWORDS_REPORT_HEADINGS,
+                          BOOK_KEYWORDS_REPORT_COLUMN_WIDTHS,
+                          null,
+                          cursor.getResultSet());
+
+            cursor.close();
+
+        }
+        catch(SQLException e)
+        {
+            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /** Produce a list of all categories - name, max books out, checkout period
@@ -1243,10 +1286,40 @@ stream.println("Book Keywords report");
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+    #sql iterator BorrowersReportCursor(String, String, String, String, String);
+
     public void borrowersReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Borrowers report");
+        try {
+            BorrowersReportCursor cursor;
+
+            #sql cursor = { select borrower.borrower_id, last_name, first_name, phone, category_name
+                from borrower join borrower_phone
+                on borrower.borrower_id = borrower_phone.borrower_id
+                order by last_name };
+
+            String [] BORROWER_REPORT_HEADINGS =
+                { "Borrower ID", "Last Name", "First Name", "Phone #", "Category" };
+            int [] BORROWER_REPORT_COLUMN_WIDTHS =
+                { 15, 17, 10, 10, 10 };
+            boolean [] BORROWER_REPORT_REPEAT_COLUMNS =
+                { false, false, false, true, false };
+
+            produceReport(stream,
+                          "Borrowers Report",
+                          BORROWER_REPORT_HEADINGS,
+                          BORROWER_REPORT_COLUMN_WIDTHS,
+                          BORROWER_REPORT_REPEAT_COLUMNS,
+                          cursor.getResultSet());
+
+            cursor.close();
+        }
+        catch(SQLException e) {
+            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally {
+            rollback();
+        }
     }
 
     /** Produce a list of all fines outstanding - borrower name and
