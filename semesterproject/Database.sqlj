@@ -1002,10 +1002,16 @@ public class Database
      */
     public void deleteBorrower(String borrowerID) throws ErrorMessage
     {
-// STUB
-Object [] information = new Object[1];
-information[0] = borrowerID;
-System.out.println("deleteBorrower(" + toString(information) + ") called");
+        try {
+            #sql { delete from borrower
+                where borrower_id = :borrowerID
+            };
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            throw new errorMessage("Unexpected error message " + e.getMessage());
+        }
     }
 
     /* ************************************************************************
