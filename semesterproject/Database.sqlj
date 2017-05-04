@@ -938,7 +938,7 @@ public class Database
             return values;
         }
         catch(SQLException e) {
-            throw new errorMessage("Unexcepted error message " + e.getMessage());
+            throw new errorMessage("Unexcepted SQL error " + e.getMessage());
         }
         finally {
             rollback();
@@ -988,7 +988,7 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            throw new errorMessage("Unexcepted error message " + e.getMessage());
+            throw new errorMessage("Unexcepted SQL error " + e.getMessage());
         }
     }
 
@@ -1010,7 +1010,7 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            throw new errorMessage("Unexpected error message " + e.getMessage());
+            throw new errorMessage("Unexpected SQL error " + e.getMessage());
         }
     }
 
@@ -1126,8 +1126,20 @@ public class Database
      */
     public void payFine(String borrowerID, Fine fine) throws ErrorMessage
     {
-// STUB
-System.out.println("payFine() " + borrowerID + " " + fine.getAmountDue() + " called");
+        try {
+            #sql { delete from fine
+                where borrower_id = :borrowerID and
+                    title = :fine.getTitle() and
+                    date_due = :fine.getDateDue() and
+                    date_returned = :fine.getDateReturned() and
+                    amount = :fine.getAmountDue()
+            };
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
     }
 
     /* ************************************************************************
