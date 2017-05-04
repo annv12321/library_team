@@ -931,7 +931,7 @@ public class Database
             };
             values[5] = originalPhones;
             #sql { select last_name, first_name, category_name
-                into values[1], values[2], values[3]
+                into :values[1], :values[2], :values[3]
                 from borrower
                 where borrower_id = :borrowerID
             };
@@ -976,12 +976,12 @@ public class Database
             };
             for (int i = 0; i < originalPhone.size(); i ++) {
                 #sql { delete form borrower_phone
-                    where phone = originalPhone.get(i) and borrower_id = :borrowerID
+                    where phone = :originalPhone.get(i) and borrower_id = :borrowerID
                 };
             }
             for (int i = 0; i < newPhones.size(); i ++) {
                 #sql { insert into borrowerID
-                    values(:borrowerID, newPhone.get(i))
+                    values(:borrowerID, :newPhone.get(i))
                 };
             }
             #sql { commit };
