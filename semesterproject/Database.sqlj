@@ -967,16 +967,29 @@ public class Database
                                List newPhones,
                                String newCategory) throws ErrorMessage
     {
-// STUB
-if (borrowerID.equals("BAD2")) throw new ErrorMessage("Error message test updateBorrower");
-Object [] information = new Object[6];
-information[0] = borrowerID;
-information[1] = newLastName;
-information[2] = newFirstName;
-information[3] = originalPhones;
-information[4] = newPhones;
-information[5] = newCategory;
-System.out.println("updateBorrower(" + toString(information) + ") called");
+        try {
+            #sql { update borrower
+                set last_name = :newLastName,
+                    first_name = :newFirstName,
+                    category_name = :newCatogory
+                where borrower_id = :borrowerID
+            };
+            for (int i = 0; i < originalPhone.size(); i ++) {
+                #sql { delete form borrower_phone
+                    where phone = originalPhone.get(i) and borrower_id = :borrowerID
+                };
+            }
+            for (int i = 0; i < newPhones.size(); i ++) {
+                #sql { insert into borrowerID
+                    values(:borrowerID, newPhone.get(i))
+                };
+            }
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            throw new errorMessage("Unexcepted error message " + e.getMessage());
+        }
     }
 
     /** Delete a borrower
