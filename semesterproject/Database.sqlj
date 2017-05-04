@@ -926,6 +926,7 @@ public class Database
             Object [] values = new Object[5];
             values[0] = borrowerID;
             #sql { select phone
+                from borrower_phone
                 into :originalPhones
                 where borrower_id = :borrowerID
             };
