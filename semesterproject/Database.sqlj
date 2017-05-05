@@ -164,6 +164,10 @@ public class Database
             rollback();
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("Cannot find borrower");
+            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY))
+                throw new ErrorMessage("No such book");
+            else if (e.getSQLState().equals(MAX_BOOKS_OUT_CONSTRAINT))
+                throw new ErrorMessage("Borrower has reached checkout limit");
             else if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Book already checked out");
             else
@@ -1557,6 +1561,7 @@ stream.println("Overdue Books report");
     private static final int BAD_PASSWORD_SQL_ERROR = -1403;
     private static final String NO_ROW_SQL_STATE = "02000";
     private static final int DUPLICATE_KEY_SQL_ERROR = -803;
+    private static final String IMPROPER_FOREIGN_KEY = "23503";
 
     private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT =
         "~~~ YOU NEED TO FILL THIS IN ~~~";
@@ -1564,6 +1569,7 @@ stream.println("Overdue Books report");
         "~~~ YOU NEED TO FILL THIS IN ~~~";
     private static final String BORROWER_CATEGORY_FOREIGN_CONSTRAINT =
         "~~~ YOU NEED TO FILL THIS IN ~~~";
+    private static final String MAX_BOOKS_OUT_CONSTRAINT = "71001";
 
     private static final String BOOK_AUTHOR_TABLE_NAME = "BOOK_AUTHOR";
 
