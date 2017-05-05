@@ -260,10 +260,8 @@ public class Database
             };
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
-            String dd = dateDue.toString();
-            Calendar old = Calendar.getInstance();
-            old.set(Integer.valueOf(dd.substring(0,4)), Integer.valueOf(dd.substring(5,7)), Integer.valueOf(dd.substring(8,10)));
-            int daysLate = now.compareTo(old);
+            Date currentDate = new Date(now.getTimeInMillis());
+            int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
             if (daysLate > 0)
             {
                 rollback();
@@ -290,10 +288,10 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
-                throw new ErrorMessage("DUPLICATE_KEY_SQL_ERROR");
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("Book not out");
             else
-                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage() + e.getSQLState());
         }
     }
 
