@@ -1001,31 +1001,41 @@ public class Database
                                List newPhones,
                                String newCategory) throws ErrorMessage
     {
-        // try {
-        //     #sql { update borrower
-        //         set last_name = :newLastName,
-        //             first_name = :newFirstName,
-        //             category_name = :newCategory
-        //         where borrower_id = :borrowerID
-        //     };
-        //     for (int i = 0; i < originalPhones.size(); i ++) {
-        //         String phoneNumber = originalPhones.get(i);
-        //         #sql { delete form borrower_phone
-        //             where phone = :phoneNumber and borrower_id = :borrowerID
-        //         };
-        //     }
-        //     for (int i = 0; i < newPhones.size(); i ++) {
-        //         String phoneNumber = newPhones.get(i);
-        //         #sql { insert into borrowerID
-        //             values(:borrowerID, :phoneNumber
-        //         };
-        //     }
-        //     #sql { commit };
-        // }
-        // catch(SQLException e) {
-        //     rollback();
-        //     throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
-        // }
+        try {
+            #sql { update borrower
+                set last_name = :newLastName,
+                    first_name = :newFirstName,
+                    category_name = :newCategory
+                where borrower_id = :borrowerID
+            };
+            Iterator originalPhonesIterator = originalPhones.iterator();
+            Iterator newPhonesIterator = newPhones.iterator();
+            while (originalPhonesIterator.hasNext()) {
+                String phoneNumber = (String) originalPhonesIterator.next();
+                if (!newPhones.contains(phoneNumber))
+                    #sql { delete from borrower_phone
+                        where borrower_id = :borrowerID
+                            and phone = :phoneNumber
+                    };
+            }
+            while (newPhonesIterator.hasNext()) {
+                String phoneNumber = (String) newPhonesIterator.next();
+                if (!originalPhones.contains(phoneNumber))
+                    #sql { insert into borrower_phone
+                        values(:borrowerID, :phoneNumber)
+                    };
+            }
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY))
+                throw new ErrorMessage("No such category");
+            else if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else
+                throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
+        }
     }
 
     /** Delete a borrower
