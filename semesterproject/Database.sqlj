@@ -898,18 +898,21 @@ public class Database
             #sql { insert into borrower
                 values(:borrowerID, :lastName, :firstName, :category)
             };
-            for (int i = 0; i < phones.size(); i++) {
-                String number = phones.get(i).toString();
+            Iterator phonesIterator = phones.iterator();
+            while (phonesIterator.hasNext()) {
+                String newPhone = (String) phonesIterator.next();
                 #sql { insert into borrower_phone
-                    values(:borrowerID, :number)
+                    values(:borrowerID, :newPhone)
                 };
             }
             #sql { commit };
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
+            if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Borrower already exists");
+            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY))
+                throw new ErrorMessage("No such category");
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
