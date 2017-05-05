@@ -918,32 +918,49 @@ public class Database
      *  @exception an ErrorMessage is thrown with an appropriate message if
      *          the borrower does not exist
      */
+    #sql iterator PhoneCursor(String);
+
     public Object [] getBorrowerInformation(String borrowerID) throws ErrorMessage
     {
-        try {
-            String lastName, firstName, categoryName;
-            List originalPhones = new ArrayList();
-            Object [] values = new Object[5];
-            values[0] = borrowerID;
-            #sql { select phone
-                from borrower_phone
-                into :originalPhones
-                where borrower_id = :borrowerID
-            };
-            values[5] = originalPhones;
-            #sql { select last_name, first_name, category_name
-                into :values[1], :values[2], :values[3]
-                from borrower
-                where borrower_id = :borrowerID
-            };
-            return values;
-        }
-        catch(SQLException e) {
-            throw new errorMessage("Unexcepted SQL error " + e.getMessage());
-        }
-        finally {
-            rollback();
-        }
+        // List originalPhones = new ArrayList();
+        // try {
+        //     PhoneCursor cursor;
+        //     List result = new ArrayList();
+        //     String lastName, firstName, categoryName, phoneNumber;
+        //     Object [] values = new Object[5];
+        //     values[0] = borrowerID;
+        //     #sql cursor = { select phone
+        //         from borrower_phone
+        //         where borrower_id = :borrowerID
+        //     };
+        //     while(true) {
+        //         #sql { fetch :cursor
+        //             into :phoneNumber
+        //         };
+        //         if (cursor.endFetch())
+        //             break;
+        //         originalPhones.add(phoneNumber);
+        //     }
+        //     cursor.close();
+        //     #sql { select last_name, first_name, category_name
+        //         into :lastName, :firstName, :categoryName
+        //         from borrower
+        //         where borrower_id = :borrowerID
+        //     };
+        //     values[1] = borrowerID;
+        //     values[2] = lastName;
+        //     values[3] = firstName;
+        //     values[4] = originalPhones;
+        //     values[5] = categoryName;
+        //     return values;
+        // }
+        // catch(SQLException e) {
+        //     throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
+        // }
+        // finally {
+        //     rollback();
+        // }
+        return new Object[5];
     }
 
     /** Update stored information about a borrower
@@ -968,29 +985,31 @@ public class Database
                                List newPhones,
                                String newCategory) throws ErrorMessage
     {
-        try {
-            #sql { update borrower
-                set last_name = :newLastName,
-                    first_name = :newFirstName,
-                    category_name = :newCatogory
-                where borrower_id = :borrowerID
-            };
-            for (int i = 0; i < originalPhone.size(); i ++) {
-                #sql { delete form borrower_phone
-                    where phone = :originalPhone.get(i) and borrower_id = :borrowerID
-                };
-            }
-            for (int i = 0; i < newPhones.size(); i ++) {
-                #sql { insert into borrowerID
-                    values(:borrowerID, :newPhone.get(i))
-                };
-            }
-            #sql { commit };
-        }
-        catch(SQLException e) {
-            rollback();
-            throw new errorMessage("Unexcepted SQL error " + e.getMessage());
-        }
+        // try {
+        //     #sql { update borrower
+        //         set last_name = :newLastName,
+        //             first_name = :newFirstName,
+        //             category_name = :newCategory
+        //         where borrower_id = :borrowerID
+        //     };
+        //     for (int i = 0; i < originalPhones.size(); i ++) {
+        //         String phoneNumber = originalPhones.get(i);
+        //         #sql { delete form borrower_phone
+        //             where phone = :phoneNumber and borrower_id = :borrowerID
+        //         };
+        //     }
+        //     for (int i = 0; i < newPhones.size(); i ++) {
+        //         String phoneNumber = newPhones.get(i);
+        //         #sql { insert into borrowerID
+        //             values(:borrowerID, :phoneNumber
+        //         };
+        //     }
+        //     #sql { commit };
+        // }
+        // catch(SQLException e) {
+        //     rollback();
+        //     throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
+        // }
     }
 
     /** Delete a borrower
@@ -1011,7 +1030,7 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            throw new errorMessage("Unexpected SQL error " + e.getMessage());
+            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
     }
 
@@ -1127,20 +1146,24 @@ public class Database
      */
     public void payFine(String borrowerID, Fine fine) throws ErrorMessage
     {
-        try {
-            #sql { delete from fine
-                where borrower_id = :borrowerID and
-                    title = :fine.getTitle() and
-                    date_due = :fine.getDateDue() and
-                    date_returned = :fine.getDateReturned() and
-                    amount = :fine.getAmountDue()
-            };
-            #sql { commit };
-        }
-        catch(SQLException e) {
-            rollback();
-            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
-        }
+        // try {
+        //     String title = fine.getTitle(),
+        //         dateDue = fine.getDateDue(),
+        //         dateReturned = fine.getDateReturned(),
+        //         amountDue = fine.getAmountDue();
+        //     #sql { delete from fine
+        //         where borrower_id = :borrowerID and
+        //             title = :title and
+        //             date_due = :dateDue and
+        //             date_returned = :dateReturned and
+        //             amount = :amountDue
+        //     };
+        //     #sql { commit };
+        // }
+        // catch(SQLException e) {
+        //     rollback();
+        //     throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        // }
     }
 
     /* ************************************************************************
@@ -1231,6 +1254,8 @@ stream.println("Book Copies report");
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+    #sql iterator BookKeywordsReportCursor(String, String, String);
+
     public void keywordsReport(PrintStream stream) throws ErrorMessage
     {
         try
@@ -1240,7 +1265,7 @@ stream.println("Book Copies report");
             #sql cursor = { select keyword, book_info.call_number, title
                 from book_info join book_keyword
                 on book_info.call_number = book_keyword.call_number
-                order by keyword, book.call_number
+                order by keyword, book_info.call_number
             };
 
             String [] BOOK_KEYWORDS_REPORT_HEADINGS =
