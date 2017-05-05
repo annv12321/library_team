@@ -1428,11 +1428,12 @@ public class Database
             FinesReportCursor cursor;
 
             #sql cursor = { select Borrower.last_name, Borrower.first_name,
-                Borrower_phone.phone,
-                (select SUM(Fine.amount)from Fine
-                    where Fine.borrower_id = Borrower.borrower_id) as total_fine
+                Borrower_phone.phone,SUM(Fine.amount) as total_fine
                 from Borrower left outer join Borrower_phone
                 on Borrower.borrower_id = Borrower_phone.borrower_id
+                join Fine on Borrower.borrower_id = Fine.borrower_id
+                group by Borrower.last_name, Borrower.first_name,
+                        Borrower_phone.phone
                 order by total_fine desc };
 
             String [] FINES_REPORT_HEADINGS =
@@ -1441,6 +1442,7 @@ public class Database
                 { 17, 10, 10, 10 };
             boolean [] FINES_REPORT_REPEAT_COLUMNS =
                 { false, false, true, false };
+            stream.println("completed query.");
 
             produceReport(stream,
                           "Fines Report",
@@ -1560,8 +1562,7 @@ stream.println("Overdue Books report");
             stream.println();
             previousLineValues = currentLineValues;
         }
-        stream.println(); stream.println();
-    }
+}
 
     /** Pad a string with spaces
      *

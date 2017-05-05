@@ -3618,11 +3618,12 @@ implements sqlj.runtime.PositionedIterator
 
 //  ************************************************************
 //  #sql cursor = { select Borrower.last_name, Borrower.first_name,
-//                  Borrower_phone.phone,
-//                  (select SUM(Fine.amount)from Fine
-//                      where Fine.borrower_id = Borrower.borrower_id) as total_fine
+//                  Borrower_phone.phone,SUM(Fine.amount) as total_fine
 //                  from Borrower left outer join Borrower_phone
 //                  on Borrower.borrower_id = Borrower_phone.borrower_id
+//                  join Fine on Borrower.borrower_id = Fine.borrower_id
+//                  group by Borrower.last_name, Borrower.first_name,
+//                          Borrower_phone.phone
 //                  order by total_fine desc  };
 //  ************************************************************
 
@@ -3647,7 +3648,7 @@ implements sqlj.runtime.PositionedIterator
 
 //  ************************************************************
 
-/*@lineinfo:user-code*//*@lineinfo:1436^42*/
+/*@lineinfo:user-code*//*@lineinfo:1437^42*/
 
             String [] FINES_REPORT_HEADINGS =
                 { "Last Name", "First Name", "Phone #", "Total Fines" };
@@ -3655,6 +3656,7 @@ implements sqlj.runtime.PositionedIterator
                 { 17, 10, 10, 10 };
             boolean [] FINES_REPORT_REPEAT_COLUMNS =
                 { false, false, true, false };
+            stream.println("completed query.");
 
             produceReport(stream,
                           "Fines Report",
@@ -3699,7 +3701,7 @@ stream.println("Overdue Books report");
     {
         try
         {
-            /*@lineinfo:generated-code*//*@lineinfo:1488^13*/
+            /*@lineinfo:generated-code*//*@lineinfo:1490^13*/
 
 //  ************************************************************
 //  #sql { rollback  };
@@ -3726,7 +3728,7 @@ stream.println("Overdue Books report");
 
 //  ************************************************************
 
-/*@lineinfo:user-code*//*@lineinfo:1488^29*/
+/*@lineinfo:user-code*//*@lineinfo:1490^29*/
         }
         catch(SQLException e)
         {
@@ -3801,8 +3803,7 @@ stream.println("Overdue Books report");
             stream.println();
             previousLineValues = currentLineValues;
         }
-        stream.println(); stream.println();
-    }
+}
 
     /** Pad a string with spaces
      *
