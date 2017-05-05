@@ -164,7 +164,7 @@ public class Database
             rollback();
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("Cannot find borrower");
-            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY))
+            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such book");
             else if (e.getSQLState().equals(MAX_BOOKS_OUT_CONSTRAINT))
                 throw new ErrorMessage("Borrower has reached checkout limit");
@@ -911,7 +911,7 @@ public class Database
             rollback();
             if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Borrower already exists");
-            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY))
+            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such category");
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
@@ -1029,7 +1029,7 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY))
+            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such category");
             else if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
@@ -1056,7 +1056,12 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else if (e.getSQLState().equals(FOREIGN_KEY_REFERENCE_SQL_STATE))
+                throw new ErrorMessage("borrower has books checked out");
+            else
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
     }
 
@@ -1581,7 +1586,8 @@ stream.println("Overdue Books report");
     private static final int BAD_PASSWORD_SQL_ERROR = -1403;
     private static final String NO_ROW_SQL_STATE = "02000";
     private static final int DUPLICATE_KEY_SQL_ERROR = -803;
-    private static final String IMPROPER_FOREIGN_KEY = "23503";
+    private static final String IMPROPER_FOREIGN_KEY_SQL_STATE = "23503";
+    private static final String FOREIGN_KEY_REFERENCE_SQL_STATE = "23504";
 
     private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT =
         "~~~ YOU NEED TO FILL THIS IN ~~~";
