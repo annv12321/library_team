@@ -933,45 +933,50 @@ public class Database
 
     public Object [] getBorrowerInformation(String borrowerID) throws ErrorMessage
     {
-        // List originalPhones = new ArrayList();
-        // try {
-        //     PhoneCursor cursor;
-        //     List result = new ArrayList();
-        //     String lastName, firstName, categoryName, phoneNumber;
-        //     Object [] values = new Object[5];
-        //     values[0] = borrowerID;
-        //     #sql cursor = { select phone
-        //         from borrower_phone
-        //         where borrower_id = :borrowerID
-        //     };
-        //     while(true) {
-        //         #sql { fetch :cursor
-        //             into :phoneNumber
-        //         };
-        //         if (cursor.endFetch())
-        //             break;
-        //         originalPhones.add(phoneNumber);
-        //     }
-        //     cursor.close();
-        //     #sql { select last_name, first_name, category_name
-        //         into :lastName, :firstName, :categoryName
-        //         from borrower
-        //         where borrower_id = :borrowerID
-        //     };
-        //     values[1] = borrowerID;
-        //     values[2] = lastName;
-        //     values[3] = firstName;
-        //     values[4] = originalPhones;
-        //     values[5] = categoryName;
-        //     return values;
-        // }
-        // catch(SQLException e) {
-        //     throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
-        // }
-        // finally {
-        //     rollback();
-        // }
-        return new Object[5];
+        List originalPhones = new ArrayList();
+        try {
+            PhoneCursor cursor;
+            List result = new ArrayList();
+            String lastName,
+                firstName,
+                categoryName,
+                phoneNumber = null;
+            Object [] values = new Object[5];
+            values[0] = borrowerID;
+            #sql cursor = { select phone
+                from borrower_phone
+                where borrower_id = :borrowerID
+            };
+            while(true) {
+                #sql { fetch :cursor
+                    into :phoneNumber
+                };
+                if (cursor.endFetch())
+                    break;
+                originalPhones.add(phoneNumber);
+            }
+            cursor.close();
+            #sql { select last_name, first_name, category_name
+                into :lastName, :firstName, :categoryName
+                from borrower
+                where borrower_id = :borrowerID
+            };
+            values[0] = borrowerID;
+            values[1] = lastName;
+            values[2] = firstName;
+            values[3] = originalPhones;
+            values[4] = categoryName;
+            return values;
+        }
+        catch(SQLException e) {
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else
+                throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
+        }
+        finally {
+            rollback();
+        }
     }
 
     /** Update stored information about a borrower
