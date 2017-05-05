@@ -162,7 +162,9 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("Cannot find borrower");
+            else if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Book already checked out");
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
