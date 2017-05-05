@@ -3574,12 +3574,12 @@ implements sqlj.runtime.PositionedIterator
   public FinesReportCursor(sqlj.runtime.profile.RTResultSet resultSet) 
     throws java.sql.SQLException 
   {
-    super(resultSet, 5);
+    super(resultSet, 4);
   }
   public FinesReportCursor(sqlj.runtime.profile.RTResultSet resultSet, int fetchSize, int maxRows) 
     throws java.sql.SQLException 
   {
-    super(resultSet, fetchSize, maxRows, 5);
+    super(resultSet, fetchSize, maxRows, 4);
   }
   public String getCol1() 
     throws java.sql.SQLException 
@@ -3596,22 +3596,17 @@ implements sqlj.runtime.PositionedIterator
   {
     return resultSet.getString(3);
   }
-  public String getCol4() 
+  public BigDecimal getCol4() 
     throws java.sql.SQLException 
   {
-    return resultSet.getString(4);
-  }
-  public String getCol5() 
-    throws java.sql.SQLException 
-  {
-    return resultSet.getString(5);
+    return resultSet.getBigDecimal(4);
   }
 }
 
 
 //  ************************************************************
 
-/*@lineinfo:user-code*//*@lineinfo:1422^76*/
+/*@lineinfo:user-code*//*@lineinfo:1422^72*/
 
     public void finesReport(PrintStream stream) throws ErrorMessage
     {
@@ -3624,7 +3619,7 @@ implements sqlj.runtime.PositionedIterator
 //  ************************************************************
 //  #sql cursor = { select Borrower.last_name, Borrower.first_name,
 //                  Borrower_phone.phone,
-//                  (select SUM(Fine.amount)from Fine 
+//                  (select SUM(Fine.amount)from Fine
 //                      where Fine.borrower_id = Borrower.borrower_id) as total_fine
 //                  from Borrower left outer join Borrower_phone
 //                  on Borrower.borrower_id = Borrower_phone.borrower_id
@@ -3655,9 +3650,9 @@ implements sqlj.runtime.PositionedIterator
 /*@lineinfo:user-code*//*@lineinfo:1436^42*/
 
             String [] FINES_REPORT_HEADINGS =
-                { "Last Name", "First Name", "Phone #", "Phone #", "Total Fines" };
+                { "Last Name", "First Name", "Phone #", "Total Fines" };
             int [] FINES_REPORT_COLUMN_WIDTHS =
-                { 17, 10, 10, 10, 10 };
+                { 17, 10, 10, 10 };
             boolean [] FINES_REPORT_REPEAT_COLUMNS =
                 { false, false, true, false };
 
