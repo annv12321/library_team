@@ -1589,12 +1589,9 @@ stream.println("Overdue Books report");
     private static final String IMPROPER_FOREIGN_KEY_SQL_STATE = "23503";
     private static final String FOREIGN_KEY_REFERENCE_SQL_STATE = "23504";
 
-    private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
-    private static final String BOOK_KEYWORD_VALID_KEYWORD_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
-    private static final String BORROWER_CATEGORY_FOREIGN_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
+    private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT = "22001";
+    private static final String BOOK_KEYWORD_VALID_KEYWORD_CONSTRAINT = "23513";
+    private static final String BORROWER_CATEGORY_FOREIGN_CONSTRAINT = "23504";
     private static final String MAX_BOOKS_OUT_CONSTRAINT = "71001";
 
     private static final String BOOK_AUTHOR_TABLE_NAME = "BOOK_AUTHOR";
