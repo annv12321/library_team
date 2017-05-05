@@ -205,31 +205,35 @@ public class Database
             };
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
-            String dd = dateDue.toString();
-            Calendar old = Calendar.getInstance();
-            old.set(Integer.valueOf(dd.substring(0,4)), Integer.valueOf(dd.substring(5,7)), Integer.valueOf(dd.substring(8,10)));
-            int daysLate = now.compareTo(old);
             Date currentDate = new Date(now.getTimeInMillis());
+            int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
+
+            System.out.println(currentDate.getTime() - dateDue.getTime());
+            System.out.println(dateDue);
+            System.out.println(currentDate);
+            System.out.println(daysLate);
+
+            #sql { delete from checked_out
+                where call_number = :callNumber and copy_number = :copyNumber
+            };
             if (daysLate > 0) {
                 BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
                     setScale(2, BigDecimal.ROUND_HALF_UP);
                 #sql { insert into fine
                     values(:borrowerID, :bookTitle, :dateDue, :currentDate, :fineAmount)
                 };
+                #sql { commit };
                 throw new ErrorMessage("Book is overdue " + daysLate + " days " +
                     "- a fine of $" + fineAmount + " has been assessed");
             }
-            #sql { delete from checked_out
-                where call_number = :callNumber and copy_number = :copyNumber
-            };
             #sql { commit };
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
-                throw new ErrorMessage("Book already checked out");
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("Book not out");
             else
-                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage() + e.getSQLState());
         }
     }
 
