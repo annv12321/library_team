@@ -731,7 +731,10 @@ public class Database
         catch(SQLException e)
         {
             rollback();
-            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such book");
+            else
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
     }
 
@@ -1273,8 +1276,6 @@ public class Database
         {
             rollback();
         }
-
-        stream.println("Book Copies report");
     }
 
     /** Produce a keywords report - keywords listed in alphabetical order,
@@ -1418,10 +1419,45 @@ public class Database
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+     #sql iterator FinesReportCursor(String, String, String, String, String);
+
     public void finesReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Fines report");
+        try
+        {
+            FinesReportCursor cursor;
+
+            #sql cursor = { select Borrower.last_name, Borrower.first_name,
+                Borrower_phone.phone,
+                (select SUM(Fine.amount)from Fine 
+                    where Fine.borrower_id = Borrower.borrower_id) as total_fine
+                from Borrower left outer join Borrower_phone
+                on Borrower.borrower_id = Borrower_phone.borrower_id
+                order by total_fine desc };
+
+            String [] FINES_REPORT_HEADINGS =
+                { "Last Name", "First Name", "Phone #", "Phone #", "Total Fines" };
+            int [] FINES_REPORT_COLUMN_WIDTHS =
+                { 17, 10, 10, 10, 10 };
+            boolean [] FINES_REPORT_REPEAT_COLUMNS =
+                { false, false, true, false };
+
+            produceReport(stream,
+                          "Fines Report",
+                          FINES_REPORT_HEADINGS,
+                          FINES_REPORT_COLUMN_WIDTHS,
+                          FINES_REPORT_REPEAT_COLUMNS,
+                          cursor.getResultSet());
+
+            cursor.close();
+        }
+        catch(SQLException e) {
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /** Produce a list of all overdue books - borrower name,
