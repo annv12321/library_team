@@ -1271,10 +1271,39 @@ public class Database
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+    #sql iterator BookCopiesCursor(int, String, int, String);
+
     public void bookCopiesReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Book Copies report");
+        try
+        {
+            BookCopiesCursor cursor;
+            #sql cursor = { select Book.barcode, Book.call_number,
+                Book.copy_number, Book_info.title from Book join Book_info
+                on Book.call_number = Book_info.call_number
+                order by Book.barcode
+            };
+
+            String [] COPIES_REPORT_HEADINGS =
+                {"Bar Code", "Call Number", "Copy #", "Title"};
+            int [] COPIES_REPORT_COLUMN_WIDTHS =
+                {10, 20, 5, 50};
+            produceReport(stream,
+                              "Book Copies Report",
+                              COPIES_REPORT_HEADINGS,
+                              COPIES_REPORT_COLUMN_WIDTHS,
+                              null,
+                              cursor.getResultSet());
+            cursor.close();
+        }
+        catch(SQLException e)
+        {
+            throw new ErrorMessage ("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /** Produce a keywords report - keywords listed in alphabetical order,
@@ -1418,10 +1447,46 @@ stream.println("Book Copies report");
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+    #sql iterator FinesReportCursor(String, String, String, BigDecimal);
+
     public void finesReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Fines report");
+        try
+        {
+            FinesReportCursor cursor;
+
+            #sql cursor = { select Borrower.last_name, Borrower.first_name,
+                Borrower_phone.phone,SUM(Fine.amount) as total_fine
+                from Borrower left outer join Borrower_phone
+                on Borrower.borrower_id = Borrower_phone.borrower_id
+                join Fine on Borrower.borrower_id = Fine.borrower_id
+                group by Borrower.last_name, Borrower.first_name,
+                        Borrower_phone.phone
+                order by total_fine desc };
+
+            String [] FINES_REPORT_HEADINGS =
+                { "Last Name", "First Name", "Phone #", "Total Fines" };
+            int [] FINES_REPORT_COLUMN_WIDTHS =
+                { 17, 10, 10, 10 };
+            boolean [] FINES_REPORT_REPEAT_COLUMNS =
+                { false, false, true, false };
+
+            produceReport(stream,
+                          "Fines Report",
+                          FINES_REPORT_HEADINGS,
+                          FINES_REPORT_COLUMN_WIDTHS,
+                          FINES_REPORT_REPEAT_COLUMNS,
+                          cursor.getResultSet());
+
+            cursor.close();
+        }
+        catch(SQLException e) {
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /** Produce a list of all overdue books - borrower name,
