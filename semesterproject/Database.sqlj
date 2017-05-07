@@ -1442,7 +1442,6 @@ public class Database
                 { 17, 10, 10, 10 };
             boolean [] FINES_REPORT_REPEAT_COLUMNS =
                 { false, false, true, false };
-            stream.println("completed query.");
 
             produceReport(stream,
                           "Fines Report",
