@@ -904,8 +904,12 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
-                throw new ErrorMessage("Borrower already exists");
+            if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR) {
+                if (e.getMessage().indexOf(BORROWER_PHONE_TABLE_NAME) >= 0)
+                    throw new ErrorMessage("Duplicate phone number");
+                else
+                    throw new ErrorMessage("Borrower already exists");
+            }
             else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such category");
             else
@@ -1024,8 +1028,12 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
-                throw new ErrorMessage("No such category");
+            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE)) {
+                if (e.getMessage().indexOf(BORROWER_PHONE_TABLE_NAME) >= 0)
+                    throw new ErrorMessage("Duplicate phone number");
+                else
+                    throw new ErrorMessage("No such category");
+            }
             else if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
             else
@@ -1656,6 +1664,7 @@ stream.println("Overdue Books report");
     private static final String MAX_BOOKS_OUT_CONSTRAINT = "71001";
 
     private static final String BOOK_AUTHOR_TABLE_NAME = "BOOK_AUTHOR";
+    private static final String BORROWER_PHONE_TABLE_NAME = "BORROWER_PHONE";
 
     private static final String DRIVER_NAME = "com.ibm.db2.jcc.DB2Driver";
     private static final String DATABASE_URL =
