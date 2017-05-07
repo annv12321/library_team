@@ -1411,16 +1411,17 @@ public class Database
             BorrowersReportCursor cursor;
 
             #sql cursor = { select borrower.borrower_id, last_name, first_name, phone, category_name
-                from borrower join borrower_phone
+                from borrower left join borrower_phone
                 on borrower.borrower_id = borrower_phone.borrower_id
-                order by last_name };
+                order by last_name
+            };
 
             String [] BORROWER_REPORT_HEADINGS =
                 { "Borrower ID", "Last Name", "First Name", "Phone #", "Category" };
             int [] BORROWER_REPORT_COLUMN_WIDTHS =
-                { 15, 17, 10, 10, 10 };
+                { 15, 15, 15, 15, 15 };
             boolean [] BORROWER_REPORT_REPEAT_COLUMNS =
-                { false, false, false, true, false };
+                { true, true, true, false, true };
 
             produceReport(stream,
                           "Borrowers Report",
