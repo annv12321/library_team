@@ -208,11 +208,6 @@ public class Database
             Date currentDate = new Date(now.getTimeInMillis());
             int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
 
-            System.out.println(currentDate.getTime() - dateDue.getTime());
-            System.out.println(dateDue);
-            System.out.println(currentDate);
-            System.out.println(daysLate);
-
             #sql { delete from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
@@ -909,8 +904,12 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
-                throw new ErrorMessage("Borrower already exists");
+            if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR) {
+                if (e.getMessage().indexOf(BORROWER_PHONE_TABLE_NAME) >= 0)
+                    throw new ErrorMessage("Duplicate phone number");
+                else
+                    throw new ErrorMessage("Borrower already exists");
+            }
             else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such category");
             else
@@ -1029,8 +1028,12 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
-                throw new ErrorMessage("No such category");
+            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE)) {
+                if (e.getMessage().indexOf(BORROWER_PHONE_TABLE_NAME) >= 0)
+                    throw new ErrorMessage("Duplicate phone number");
+                else
+                    throw new ErrorMessage("No such category");
+            }
             else if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
             else
@@ -1331,7 +1334,7 @@ public class Database
             String [] BOOK_KEYWORDS_REPORT_HEADINGS =
                 { "Keyword", "Call Number", "Title" };
             int [] BOOK_KEYWORDS_REPORT_COLUMN_WIDTHS =
-                { 10, 30, 30 };
+                { 20, 20, 50 };
 
             produceReport(stream,
                           "Book Keywords Report",
@@ -1411,16 +1414,17 @@ public class Database
             BorrowersReportCursor cursor;
 
             #sql cursor = { select borrower.borrower_id, last_name, first_name, phone, category_name
-                from borrower join borrower_phone
+                from borrower left join borrower_phone
                 on borrower.borrower_id = borrower_phone.borrower_id
-                order by last_name };
+                order by last_name
+            };
 
             String [] BORROWER_REPORT_HEADINGS =
                 { "Borrower ID", "Last Name", "First Name", "Phone #", "Category" };
             int [] BORROWER_REPORT_COLUMN_WIDTHS =
-                { 15, 17, 10, 10, 10 };
+                { 15, 20, 20, 20, 10 };
             boolean [] BORROWER_REPORT_REPEAT_COLUMNS =
-                { false, false, false, true, false };
+                { true, true, true, false, true };
 
             produceReport(stream,
                           "Borrowers Report",
@@ -1660,6 +1664,7 @@ stream.println("Overdue Books report");
     private static final String MAX_BOOKS_OUT_CONSTRAINT = "71001";
 
     private static final String BOOK_AUTHOR_TABLE_NAME = "BOOK_AUTHOR";
+    private static final String BORROWER_PHONE_TABLE_NAME = "BORROWER_PHONE";
 
     private static final String DRIVER_NAME = "com.ibm.db2.jcc.DB2Driver";
     private static final String DATABASE_URL =
