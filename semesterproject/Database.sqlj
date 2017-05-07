@@ -1150,16 +1150,12 @@ public class Database
     public void payFine(String borrowerID, Fine fine) throws ErrorMessage
     {
         // try {
-        //     String title = fine.getTitle(),
-        //         dateDue = fine.getDateDue(),
-        //         dateReturned = fine.getDateReturned(),
-        //         amountDue = fine.getAmountDue();
         //     #sql { delete from fine
         //         where borrower_id = :borrowerID and
-        //             title = :title and
-        //             date_due = :dateDue and
-        //             date_returned = :dateReturned and
-        //             amount = :amountDue
+        //             title = :Fine. and
+        //             date_due = :Fine.dateDue and
+        //             date_returned = :Fine.dateReturned and
+        //             amount = :Fine.amount
         //     };
         //     #sql { commit };
         // }
@@ -1663,11 +1659,11 @@ public class Database
     private static final int DUPLICATE_KEY_SQL_ERROR = -803;
 
     private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
+        "22001";
     private static final String BOOK_KEYWORD_VALID_KEYWORD_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
+        "23513";
     private static final String BORROWER_CATEGORY_FOREIGN_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
+        "23503";
 
     private static final String BOOK_AUTHOR_TABLE_NAME = "BOOK_AUTHOR";
 
