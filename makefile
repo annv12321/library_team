@@ -1,7 +1,7 @@
 # Makefile for student submission for CS352 Semester project
 # Declaration of USERNAME below must be customized to actual user
 
-USERNAME = james
+USERNAME = anna
 
 all: sqlj javac bind
 

@@ -162,7 +162,13 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("Cannot find borrower");
+            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
+                throw new ErrorMessage("No such book");
+            else if (e.getSQLState().equals(MAX_BOOKS_OUT_CONSTRAINT))
+                throw new ErrorMessage("Borrower has reached checkout limit");
+            else if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Book already checked out");
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
@@ -199,31 +205,35 @@ public class Database
             };
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
-            String dd = dateDue.toString();
-            Calendar old = Calendar.getInstance();
-            old.set(Integer.valueOf(dd.substring(0,4)), Integer.valueOf(dd.substring(5,7)), Integer.valueOf(dd.substring(8,10)));
-            int daysLate = now.compareTo(old);
             Date currentDate = new Date(now.getTimeInMillis());
+            int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
+
+            System.out.println(currentDate.getTime() - dateDue.getTime());
+            System.out.println(dateDue);
+            System.out.println(currentDate);
+            System.out.println(daysLate);
+
+            #sql { delete from checked_out
+                where call_number = :callNumber and copy_number = :copyNumber
+            };
             if (daysLate > 0) {
                 BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
                     setScale(2, BigDecimal.ROUND_HALF_UP);
                 #sql { insert into fine
                     values(:borrowerID, :bookTitle, :dateDue, :currentDate, :fineAmount)
                 };
+                #sql { commit };
                 throw new ErrorMessage("Book is overdue " + daysLate + " days " +
                     "- a fine of $" + fineAmount + " has been assessed");
             }
-            #sql { delete from checked_out
-                where call_number = :callNumber and copy_number = :copyNumber
-            };
             #sql { commit };
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
-                throw new ErrorMessage("Book already checked out");
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("Book not out");
             else
-                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage() + e.getSQLState());
         }
     }
 
@@ -250,10 +260,8 @@ public class Database
             };
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
-            String dd = dateDue.toString();
-            Calendar old = Calendar.getInstance();
-            old.set(Integer.valueOf(dd.substring(0,4)), Integer.valueOf(dd.substring(5,7)), Integer.valueOf(dd.substring(8,10)));
-            int daysLate = now.compareTo(old);
+            Date currentDate = new Date(now.getTimeInMillis());
+            int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
             if (daysLate > 0)
             {
                 rollback();
@@ -280,10 +288,10 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
-                throw new ErrorMessage("DUPLICATE_KEY_SQL_ERROR");
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("Book not out");
             else
-                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage() + e.getSQLState());
         }
     }
 
@@ -890,18 +898,21 @@ public class Database
             #sql { insert into borrower
                 values(:borrowerID, :lastName, :firstName, :category)
             };
-            for (int i = 0; i < phones.size(); i++) {
-                String number = phones.get(i).toString();
+            Iterator phonesIterator = phones.iterator();
+            while (phonesIterator.hasNext()) {
+                String newPhone = (String) phonesIterator.next();
                 #sql { insert into borrower_phone
-                    values(:borrowerID, :number)
+                    values(:borrowerID, :newPhone)
                 };
             }
             #sql { commit };
         }
         catch(SQLException e) {
             rollback();
-            if (e.getSQLState().equals(DUPLICATE_KEY_SQL_ERROR))
+            if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Borrower already exists");
+            else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
+                throw new ErrorMessage("No such category");
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
@@ -922,45 +933,50 @@ public class Database
 
     public Object [] getBorrowerInformation(String borrowerID) throws ErrorMessage
     {
-        // List originalPhones = new ArrayList();
-        // try {
-        //     PhoneCursor cursor;
-        //     List result = new ArrayList();
-        //     String lastName, firstName, categoryName, phoneNumber;
-        //     Object [] values = new Object[5];
-        //     values[0] = borrowerID;
-        //     #sql cursor = { select phone
-        //         from borrower_phone
-        //         where borrower_id = :borrowerID
-        //     };
-        //     while(true) {
-        //         #sql { fetch :cursor
-        //             into :phoneNumber
-        //         };
-        //         if (cursor.endFetch())
-        //             break;
-        //         originalPhones.add(phoneNumber);
-        //     }
-        //     cursor.close();
-        //     #sql { select last_name, first_name, category_name
-        //         into :lastName, :firstName, :categoryName
-        //         from borrower
-        //         where borrower_id = :borrowerID
-        //     };
-        //     values[1] = borrowerID;
-        //     values[2] = lastName;
-        //     values[3] = firstName;
-        //     values[4] = originalPhones;
-        //     values[5] = categoryName;
-        //     return values;
-        // }
-        // catch(SQLException e) {
-        //     throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
-        // }
-        // finally {
-        //     rollback();
-        // }
-        return new Object[5];
+        List originalPhones = new ArrayList();
+        try {
+            PhoneCursor cursor;
+            List result = new ArrayList();
+            String lastName,
+                firstName,
+                categoryName,
+                phoneNumber = null;
+            Object [] values = new Object[5];
+            values[0] = borrowerID;
+            #sql cursor = { select phone
+                from borrower_phone
+                where borrower_id = :borrowerID
+            };
+            while(true) {
+                #sql { fetch :cursor
+                    into :phoneNumber
+                };
+                if (cursor.endFetch())
+                    break;
+                originalPhones.add(phoneNumber);
+            }
+            cursor.close();
+            #sql { select last_name, first_name, category_name
+                into :lastName, :firstName, :categoryName
+                from borrower
+                where borrower_id = :borrowerID
+            };
+            values[0] = borrowerID;
+            values[1] = lastName;
+            values[2] = firstName;
+            values[3] = originalPhones;
+            values[4] = categoryName;
+            return values;
+        }
+        catch(SQLException e) {
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else
+                throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
+        }
+        finally {
+            rollback();
+        }
     }
 
     /** Update stored information about a borrower
@@ -985,31 +1001,41 @@ public class Database
                                List newPhones,
                                String newCategory) throws ErrorMessage
     {
-        // try {
-        //     #sql { update borrower
-        //         set last_name = :newLastName,
-        //             first_name = :newFirstName,
-        //             category_name = :newCategory
-        //         where borrower_id = :borrowerID
-        //     };
-        //     for (int i = 0; i < originalPhones.size(); i ++) {
-        //         String phoneNumber = originalPhones.get(i);
-        //         #sql { delete form borrower_phone
-        //             where phone = :phoneNumber and borrower_id = :borrowerID
-        //         };
-        //     }
-        //     for (int i = 0; i < newPhones.size(); i ++) {
-        //         String phoneNumber = newPhones.get(i);
-        //         #sql { insert into borrowerID
-        //             values(:borrowerID, :phoneNumber
-        //         };
-        //     }
-        //     #sql { commit };
-        // }
-        // catch(SQLException e) {
-        //     rollback();
-        //     throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
-        // }
+        try {
+            #sql { update borrower
+                set last_name = :newLastName,
+                    first_name = :newFirstName,
+                    category_name = :newCategory
+                where borrower_id = :borrowerID
+            };
+            Iterator originalPhonesIterator = originalPhones.iterator();
+            Iterator newPhonesIterator = newPhones.iterator();
+            while (originalPhonesIterator.hasNext()) {
+                String phoneNumber = (String) originalPhonesIterator.next();
+                if (!newPhones.contains(phoneNumber))
+                    #sql { delete from borrower_phone
+                        where borrower_id = :borrowerID
+                            and phone = :phoneNumber
+                    };
+            }
+            while (newPhonesIterator.hasNext()) {
+                String phoneNumber = (String) newPhonesIterator.next();
+                if (!originalPhones.contains(phoneNumber))
+                    #sql { insert into borrower_phone
+                        values(:borrowerID, :phoneNumber)
+                    };
+            }
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
+                throw new ErrorMessage("No such category");
+            else if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else
+                throw new ErrorMessage("Unexcepted SQL error " + e.getMessage());
+        }
     }
 
     /** Delete a borrower
@@ -1030,7 +1056,12 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
-            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+            if (e.getSQLState().equals(NO_ROW_SQL_STATE))
+                throw new ErrorMessage("No such borrower");
+            else if (e.getSQLState().equals(FOREIGN_KEY_REFERENCE_SQL_STATE))
+                throw new ErrorMessage("borrower has books checked out");
+            else
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
     }
 
@@ -1240,10 +1271,39 @@ public class Database
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+    #sql iterator BookCopiesCursor(int, String, int, String);
+
     public void bookCopiesReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Book Copies report");
+        try
+        {
+            BookCopiesCursor cursor;
+            #sql cursor = { select Book.barcode, Book.call_number,
+                Book.copy_number, Book_info.title from Book join Book_info
+                on Book.call_number = Book_info.call_number
+                order by Book.barcode
+            };
+
+            String [] COPIES_REPORT_HEADINGS =
+                {"Bar Code", "Call Number", "Copy #", "Title"};
+            int [] COPIES_REPORT_COLUMN_WIDTHS =
+                {10, 20, 5, 50};
+            produceReport(stream,
+                              "Book Copies Report",
+                              COPIES_REPORT_HEADINGS,
+                              COPIES_REPORT_COLUMN_WIDTHS,
+                              null,
+                              cursor.getResultSet());
+            cursor.close();
+        }
+        catch(SQLException e)
+        {
+            throw new ErrorMessage ("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /** Produce a keywords report - keywords listed in alphabetical order,
@@ -1387,10 +1447,46 @@ stream.println("Book Copies report");
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+    #sql iterator FinesReportCursor(String, String, String, BigDecimal);
+
     public void finesReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Fines report");
+        try
+        {
+            FinesReportCursor cursor;
+
+            #sql cursor = { select Borrower.last_name, Borrower.first_name,
+                Borrower_phone.phone,SUM(Fine.amount) as total_fine
+                from Borrower left outer join Borrower_phone
+                on Borrower.borrower_id = Borrower_phone.borrower_id
+                join Fine on Borrower.borrower_id = Fine.borrower_id
+                group by Borrower.last_name, Borrower.first_name,
+                        Borrower_phone.phone
+                order by total_fine desc };
+
+            String [] FINES_REPORT_HEADINGS =
+                { "Last Name", "First Name", "Phone #", "Total Fines" };
+            int [] FINES_REPORT_COLUMN_WIDTHS =
+                { 17, 10, 10, 10 };
+            boolean [] FINES_REPORT_REPEAT_COLUMNS =
+                { false, false, true, false };
+
+            produceReport(stream,
+                          "Fines Report",
+                          FINES_REPORT_HEADINGS,
+                          FINES_REPORT_COLUMN_WIDTHS,
+                          FINES_REPORT_REPEAT_COLUMNS,
+                          cursor.getResultSet());
+
+            cursor.close();
+        }
+        catch(SQLException e) {
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /** Produce a list of all overdue books - borrower name,
@@ -1555,13 +1651,13 @@ stream.println("Overdue Books report");
     private static final int BAD_PASSWORD_SQL_ERROR = -1403;
     private static final String NO_ROW_SQL_STATE = "02000";
     private static final int DUPLICATE_KEY_SQL_ERROR = -803;
+    private static final String IMPROPER_FOREIGN_KEY_SQL_STATE = "23503";
+    private static final String FOREIGN_KEY_REFERENCE_SQL_STATE = "23504";
 
-    private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
-    private static final String BOOK_KEYWORD_VALID_KEYWORD_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
-    private static final String BORROWER_CATEGORY_FOREIGN_CONSTRAINT =
-        "~~~ YOU NEED TO FILL THIS IN ~~~";
+    private static final String BOOK_INFO_VALID_FORMAT_CONSTRAINT = "22001";
+    private static final String BOOK_KEYWORD_VALID_KEYWORD_CONSTRAINT = "23513";
+    private static final String BORROWER_CATEGORY_FOREIGN_CONSTRAINT = "23504";
+    private static final String MAX_BOOKS_OUT_CONSTRAINT = "71001";
 
     private static final String BOOK_AUTHOR_TABLE_NAME = "BOOK_AUTHOR";
 
