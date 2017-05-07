@@ -208,11 +208,6 @@ public class Database
             Date currentDate = new Date(now.getTimeInMillis());
             int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
 
-            System.out.println(currentDate.getTime() - dateDue.getTime());
-            System.out.println(dateDue);
-            System.out.println(currentDate);
-            System.out.println(daysLate);
-
             #sql { delete from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
@@ -1331,7 +1326,7 @@ public class Database
             String [] BOOK_KEYWORDS_REPORT_HEADINGS =
                 { "Keyword", "Call Number", "Title" };
             int [] BOOK_KEYWORDS_REPORT_COLUMN_WIDTHS =
-                { 10, 30, 30 };
+                { 20, 20, 50 };
 
             produceReport(stream,
                           "Book Keywords Report",
@@ -1419,7 +1414,7 @@ public class Database
             String [] BORROWER_REPORT_HEADINGS =
                 { "Borrower ID", "Last Name", "First Name", "Phone #", "Category" };
             int [] BORROWER_REPORT_COLUMN_WIDTHS =
-                { 15, 15, 15, 15, 15 };
+                { 15, 20, 20, 20, 10 };
             boolean [] BORROWER_REPORT_REPEAT_COLUMNS =
                 { true, true, true, false, true };
 
