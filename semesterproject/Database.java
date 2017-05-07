@@ -3561,7 +3561,8 @@ implements sqlj.runtime.PositionedIterator
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
-     /*@lineinfo:generated-code*//*@lineinfo:1422^6*/
+
+     /*@lineinfo:generated-code*//*@lineinfo:1423^6*/
 
 //  ************************************************************
 //  SQLJ iterator declaration:
@@ -3606,7 +3607,7 @@ implements sqlj.runtime.PositionedIterator
 
 //  ************************************************************
 
-/*@lineinfo:user-code*//*@lineinfo:1422^72*/
+/*@lineinfo:user-code*//*@lineinfo:1423^72*/
 
     public void finesReport(PrintStream stream) throws ErrorMessage
     {
@@ -3614,11 +3615,12 @@ implements sqlj.runtime.PositionedIterator
         {
             FinesReportCursor cursor;
 
-            /*@lineinfo:generated-code*//*@lineinfo:1430^13*/
+            /*@lineinfo:generated-code*//*@lineinfo:1431^13*/
 
 //  ************************************************************
-//  #sql cursor = { select Borrower.last_name, Borrower.first_name,
-//                  Borrower_phone.phone,SUM(Fine.amount) as total_fine
+//  #sql cursor = { select Borrower.last_name,
+//                  Borrower.first_name,Borrower_phone.phone,
+//                  SUM(Fine.amount) as total_fine
 //                  from Borrower left outer join Borrower_phone
 //                  on Borrower.borrower_id = Borrower_phone.borrower_id
 //                  join Fine on Borrower.borrower_id = Fine.borrower_id
@@ -3648,15 +3650,14 @@ implements sqlj.runtime.PositionedIterator
 
 //  ************************************************************
 
-/*@lineinfo:user-code*//*@lineinfo:1437^42*/
+/*@lineinfo:user-code*//*@lineinfo:1439^42*/
 
             String [] FINES_REPORT_HEADINGS =
                 { "Last Name", "First Name", "Phone #", "Total Fines" };
             int [] FINES_REPORT_COLUMN_WIDTHS =
-                { 17, 10, 10, 10 };
+                { 20, 20, 20, 10 };
             boolean [] FINES_REPORT_REPEAT_COLUMNS =
-                { false, false, true, false };
-            stream.println("completed query.");
+                { true, true, false, true };
 
             produceReport(stream,
                           "Fines Report",
@@ -3684,10 +3685,119 @@ implements sqlj.runtime.PositionedIterator
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+
+      /*@lineinfo:generated-code*//*@lineinfo:1475^7*/
+
+//  ************************************************************
+//  SQLJ iterator declaration:
+//  ************************************************************
+
+class ODBooksReportCursor 
+extends sqlj.runtime.ref.ResultSetIterImpl
+implements sqlj.runtime.PositionedIterator
+{
+  public ODBooksReportCursor(sqlj.runtime.profile.RTResultSet resultSet) 
+    throws java.sql.SQLException 
+  {
+    super(resultSet, 4);
+  }
+  public ODBooksReportCursor(sqlj.runtime.profile.RTResultSet resultSet, int fetchSize, int maxRows) 
+    throws java.sql.SQLException 
+  {
+    super(resultSet, fetchSize, maxRows, 4);
+  }
+  public String getCol1() 
+    throws java.sql.SQLException 
+  {
+    return resultSet.getString(1);
+  }
+  public String getCol2() 
+    throws java.sql.SQLException 
+  {
+    return resultSet.getString(2);
+  }
+  public String getCol3() 
+    throws java.sql.SQLException 
+  {
+    return resultSet.getString(3);
+  }
+  public Date getCol4() 
+    throws java.sql.SQLException 
+  {
+    return resultSet.getDate(4);
+  }
+}
+
+
+//  ************************************************************
+
+/*@lineinfo:user-code*//*@lineinfo:1475^69*/
+
     public void overdueBooksReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Overdue Books report");
+        try
+        {
+            ODBooksReportCursor cursor;
+
+            /*@lineinfo:generated-code*//*@lineinfo:1483^13*/
+
+//  ************************************************************
+//  #sql cursor = { select Borrower.last_name, Borrower.first_name,
+//                  Book_info.title, Checked_out.date_due
+//                  from Borrower join Checked_out
+//                  on Borrower.borrower_id = Checked_out.borrower_id
+//                  join Book_info on Checked_out.call_number = Book_info.call_number
+//                  where current date < Checked_out.date_due
+//                  order by Borrower.last_name, Borrower.first_name,
+//                      Checked_out.date_due  };
+//  ************************************************************
+
+{
+  sqlj.runtime.ConnectionContext __sJT_connCtx = sqlj.runtime.ref.DefaultContext.getDefaultContext();
+  if (__sJT_connCtx == null) sqlj.runtime.error.RuntimeRefErrors.raise_NULL_DEFAULT_CONN_CTX();
+  sqlj.runtime.ExecutionContext __sJT_execCtx = __sJT_connCtx.getExecutionContext();
+  if (__sJT_execCtx == null) sqlj.runtime.error.RuntimeRefErrors.raise_NULL_EXEC_CTX();
+  synchronized (__sJT_execCtx) {
+    sqlj.runtime.profile.RTStatement __sJT_stmt = __sJT_execCtx.registerStatement(__sJT_connCtx, Database_SJProfileKeys.getKey(0), 55);
+    try 
+    {
+      cursor = new ODBooksReportCursor(__sJT_execCtx.executeQuery(), __sJT_execCtx.getFetchSize(), __sJT_execCtx.getMaxRows());
+    }
+    finally 
+    {
+      __sJT_execCtx.releaseStatement();
+    }
+  }
+}
+
+
+//  ************************************************************
+
+/*@lineinfo:user-code*//*@lineinfo:1490^42*/
+
+            String [] ODBOOKS_REPORT_HEADINGS =
+                { "Last Name", "First Name", "Title", "Date Due" };
+            int [] ODBOOKS_REPORT_COLUMN_WIDTHS =
+                { 20, 20, 50, 10 };
+            boolean [] ODBOOKS_REPORT_REPEAT_COLUMNS =
+                { true, true, false, false };
+
+            produceReport(stream,
+                          "Fines Report",
+                          ODBOOKS_REPORT_HEADINGS,
+                          ODBOOKS_REPORT_COLUMN_WIDTHS,
+                          ODBOOKS_REPORT_REPEAT_COLUMNS,
+                          cursor.getResultSet());
+
+            cursor.close();
+        }
+        catch(SQLException e) {
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /* ************************************************************************
@@ -3701,7 +3811,7 @@ stream.println("Overdue Books report");
     {
         try
         {
-            /*@lineinfo:generated-code*//*@lineinfo:1490^13*/
+            /*@lineinfo:generated-code*//*@lineinfo:1528^13*/
 
 //  ************************************************************
 //  #sql { rollback  };
@@ -3713,7 +3823,7 @@ stream.println("Overdue Books report");
   sqlj.runtime.ExecutionContext __sJT_execCtx = __sJT_connCtx.getExecutionContext();
   if (__sJT_execCtx == null) sqlj.runtime.error.RuntimeRefErrors.raise_NULL_EXEC_CTX();
   synchronized (__sJT_execCtx) {
-    sqlj.runtime.profile.RTStatement __sJT_stmt = __sJT_execCtx.registerStatement(__sJT_connCtx, Database_SJProfileKeys.getKey(0), 55);
+    sqlj.runtime.profile.RTStatement __sJT_stmt = __sJT_execCtx.registerStatement(__sJT_connCtx, Database_SJProfileKeys.getKey(0), 56);
     try 
     {
       __sJT_execCtx.executeUpdate();
@@ -3728,7 +3838,7 @@ stream.println("Overdue Books report");
 
 //  ************************************************************
 
-/*@lineinfo:user-code*//*@lineinfo:1490^29*/
+/*@lineinfo:user-code*//*@lineinfo:1528^29*/
         }
         catch(SQLException e)
         {

@@ -1419,6 +1419,7 @@ public class Database
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+
      #sql iterator FinesReportCursor(String, String, String, BigDecimal);
 
     public void finesReport(PrintStream stream) throws ErrorMessage
@@ -1427,8 +1428,9 @@ public class Database
         {
             FinesReportCursor cursor;
 
-            #sql cursor = { select Borrower.last_name, Borrower.first_name,
-                Borrower_phone.phone,SUM(Fine.amount) as total_fine
+            #sql cursor = { select Borrower.last_name,
+                Borrower.first_name,Borrower_phone.phone,
+                SUM(Fine.amount) as total_fine
                 from Borrower left outer join Borrower_phone
                 on Borrower.borrower_id = Borrower_phone.borrower_id
                 join Fine on Borrower.borrower_id = Fine.borrower_id
@@ -1439,9 +1441,9 @@ public class Database
             String [] FINES_REPORT_HEADINGS =
                 { "Last Name", "First Name", "Phone #", "Total Fines" };
             int [] FINES_REPORT_COLUMN_WIDTHS =
-                { 17, 10, 10, 10 };
+                { 20, 20, 20, 10 };
             boolean [] FINES_REPORT_REPEAT_COLUMNS =
-                { false, false, true, false };
+                { true, true, false, true };
 
             produceReport(stream,
                           "Fines Report",
@@ -1469,10 +1471,47 @@ public class Database
      *  @exception an ErrorMessage is thrown if there is an unexpected error
      *             accessing the database.
      */
+
+      #sql iterator ODBooksReportCursor(String, String, String, Date);
+
     public void overdueBooksReport(PrintStream stream) throws ErrorMessage
     {
-// STUB
-stream.println("Overdue Books report");
+        try
+        {
+            ODBooksReportCursor cursor;
+
+            #sql cursor = { select Borrower.last_name, Borrower.first_name,
+                Book_info.title, Checked_out.date_due
+                from Borrower join Checked_out
+                on Borrower.borrower_id = Checked_out.borrower_id
+                join Book_info on Checked_out.call_number = Book_info.call_number
+                where current date < Checked_out.date_due
+                order by Borrower.last_name, Borrower.first_name,
+                    Checked_out.date_due };
+
+            String [] ODBOOKS_REPORT_HEADINGS =
+                { "Last Name", "First Name", "Title", "Date Due" };
+            int [] ODBOOKS_REPORT_COLUMN_WIDTHS =
+                { 20, 20, 50, 10 };
+            boolean [] ODBOOKS_REPORT_REPEAT_COLUMNS =
+                { true, true, false, false };
+
+            produceReport(stream,
+                          "Fines Report",
+                          ODBOOKS_REPORT_HEADINGS,
+                          ODBOOKS_REPORT_COLUMN_WIDTHS,
+                          ODBOOKS_REPORT_REPEAT_COLUMNS,
+                          cursor.getResultSet());
+
+            cursor.close();
+        }
+        catch(SQLException e) {
+                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
+        finally
+        {
+            rollback();
+        }
     }
 
     /* ************************************************************************
