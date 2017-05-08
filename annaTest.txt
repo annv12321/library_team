@@ -26,12 +26,40 @@ AK 09976 "Data Structures" {"Russell Bjork"} PE {"An Essential for Learning"}
 AK 81476 "Coding at Midnight" {"Krista Christie" "Anna Pelletier" "James Kempf" "Anna Pelletier"} SC {"Memoir"}
 ! Adding a book with the incorrect format (should throw error)
 AK 75678 "Killing Time" {"Norman Bates"} book {"Murder"}
+! Editing book with everything right
+EK BG.908 "MakeFile: A Comprehensive Guide" {"Harold George"} SC {"Coding" "C++" "Programming" "Development"}
+! Editing book with a duplicate keyword (should throw error)
+EK BG.908 "MakeFile: A Comprehensive Guide" {"Harold George"} SC {"Programming" "C++" "Programming" "Development"}
+! Editing a book with duplicate author(should throw error)
+EK BH.78 "A Comprehensive Guide to Daisy Crowns" {"Daisy Crowne" "Daisy Crowne"} SC {"Activities" "Summer" "Dancing" "Happiness"}
+! Editing book with added spaces (should throw error)
+EK QW.897 "Mere Christianity" {"C.S. Lewis"} HC {"I Love This Book"}
+! Editing book with incorrect format (should throw error)
+EK QW.897 "Mere Christianity" {"C.S. Lewis"} book {"Faith"}
+! Editing a non-existent book(should throw error)
+EK EEK.38 "Peonies are for Friends" {"Hugh McSorley"} CD {"Horror"}
+! Deleting existent book
+DK PS.90 1
+! Deleting non-existent copy of a book(should throw error)
+DK PS.90 2
 ! Inserting categories correctly
 AC Peon 3 2
 AC BigCheese 30 15
 AC BookWorm 7 7
 ! Adding a category with a duplicate name (Should throw error)
 AC Peon 365 100
+! Editing category with everything right
+EC Peon 4 16
+! Editing a non-existent category (should throw error)
+EC Goose 1 1
+! Deleting filled category (should throw error)
+DC BookWorm
+! Deleting non-existent category (should throw error)
+DC Haberdasher
+! Create a category to delete
+AC Goose 1 1
+! Deleting said category
+DC Goose
 ! Inserting borrowers correctly
 AR 1234 "Bone" "Matilda" {"0000000000"} BookWorm
 AR 5678 "Granger" "Hermione" {"9789663002"} BookWorm
@@ -57,20 +85,6 @@ AR 8097 "Addams" "Wednesday" {"2457712157"} BigCheese
 AR 0020 "Beaudelaire" "Sonny" {"2819192845"} Orphan
 ! Adding a borrower with a duplicate phone(should throw error)
 AR 0020 "Beaudelaire" "Veronica" {"2819192845" "2819192845"} BigCheese
-! Editing book with everything right
-EK BG.908 "MakeFile: A Comprehensive Guide" {"Harold George"} SC {"Coding" "C++" "Programming" "Development"}
-! Editing book with a duplicate keyword (should throw error)
-EK BG.908 "MakeFile: A Comprehensive Guide" {"Harold George"} SC {"Programming" "C++" "Programming" "Development"}
-! Editing a book with duplicate author(should throw error)
-EK BH.78 "A Comprehensive Guide to Daisy Crowns" {"Daisy Crowne" "Daisy Crowne"} SC {"Activities" "Summer" "Dancing" "Happiness"}
-! Editing book with added spaces (should throw error)
-EK QW.897 "Mere Christianity" {"C.S. Lewis"} HC {"I Love This Book"}
-! Editing book with incorrect format (should throw error)
-EK QW.897 "Mere Christianity" {"C.S. Lewis"} book {"Faith"}
-! Editing a non-existent book(should throw error)
-EK EEK.38 "Peonies are for Friends" {"Hugh McSorley"} CD {"Horror"}
-! Editing category with everything right
-EC Peon 4 16
 ! Editing borrower with everything correct
 ER 1234 "Bone" "Matilda" {"1234414873"} BigCheese
 ER 2002 "Morgendorffer" "Daria" {"1234414873"} BookWorm
@@ -78,26 +92,12 @@ ER 2002 "Morgendorffer" "Daria" {"1234414873"} BookWorm
 ER 1039 "Finch" "Scout" {"1046471439"} Peon
 ! Editing non-existent borrower(should throw error)
 ER 1995 "Bowman" "Hattie" {"9087546378"} Peon
-! Deleting existent book
-DK PS.90 1
-! Deleting non-existent copy of a book(should throw error)
-DK PS.90 2
-! Editing a non-existent category (should throw error)
-EC Goose 1 1
 ! Adding borrower with duplicate ID (should throw error)
 AR 2002 "Killian" "Hatter" {"0100101001"} BookWorm
-! Deleting filled category (should throw error)
-DC BookWorm
 ! Editing a borrower to undefined category (should throw error)
 ER 2817 "Beaudelaire" "Klaus" {"2819192845"} Orphan
-! Deleting non-existent category (should throw error)
-DC Haberdasher
 ! Deleting non-existent borrower (should throw error)
 DR 1995
-! Create a category to delete
-AC Goose 1 1
-! Deleting said category
-DC Goose
 ! Checking out books
 C 1234 CD.12 1
 C 1234 QW.897 1
