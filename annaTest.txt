@@ -25,11 +25,11 @@ AK 09976 "Data Structures" {"Russell Bjork"} PE {"An Essential for Learning"}
 ! Adding book with duplicate author (should throw error)
 AK 81476 "Coding at Midnight" {"Krista Christie" "Anna Pelletier" "James Kempf" "Anna Pelletier"} SC {"Memoir"}
 ! Adding a book with the incorrect format (should throw error)
-AK 75678 "Killing Time" SC {"Murder"} {"Norman Bates"}
+AK 75678 "Killing Time" {"Norman Bates"} book {"Murder"}
 ! Inserting categories correctly
-AC Peon 3 15
-AC BigCheese 100 10000
-AC BookWorm 7 30
+AC Peon 3 2
+AC BigCheese 30 15
+AC BookWorm 7 7
 ! Adding a category with a duplicate name (Should throw error)
 AC Peon 365 100
 ! Inserting borrowers correctly
@@ -66,7 +66,7 @@ EK BH.78 "A Comprehensive Guide to Daisy Crowns" {"Daisy Crowne" "Daisy Crowne"}
 ! Editing book with added spaces (should throw error)
 EK QW.897 "Mere Christianity" {"C.S. Lewis"} HC {"I Love This Book"}
 ! Editing book with incorrect format (should throw error)
-EK QW.897 "Mere Christianity" SC {"C.S. Lewis"}
+EK QW.897 "Mere Christianity" {"C.S. Lewis"} book {"Faith"}
 ! Editing a non-existent book(should throw error)
 EK EEK.38 "Peonies are for Friends" {"Hugh McSorley"} CD {"Horror"}
 ! Editing category with everything right
@@ -98,8 +98,6 @@ DR 1995
 AC Goose 1 1
 ! Deleting said category
 DC Goose
-! Delete borrower (should also delete fines associated with the borrower)
-DR 2519
 ! Checking out books
 C 1234 CD.12 1
 C 1234 QW.897 1
@@ -120,7 +118,7 @@ DK 12 1
 ! Checking out book to non-existent borrower (should throw error)
 C 1995 CD.12 2
 ! Checking out non-existent book (should throw error)
-C 1234 KLE.67 1
+C 3815 KLE.67 1
 ! Checking out book that is already checked out
 C 1970 BG.908 1
 ! Returning a book that isn't out (should throw error)
