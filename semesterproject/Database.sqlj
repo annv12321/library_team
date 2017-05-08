@@ -118,6 +118,7 @@ public class Database
             return last + " " + first;
         }
         catch(SQLException e) {
+            // borrowerID not found in database
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
             else
@@ -151,6 +152,7 @@ public class Database
                 on category.category_name = borrower.category_name
                 where borrower.borrower_id = :borrowerID
             };
+            // Calculate the correct due date
             Calendar cal = Calendar.getInstance();
             cal.add(cal.DAY_OF_YEAR, deltaDate + checkoutPeriod);
             Date dateDue = new Date(cal.getTimeInMillis());
@@ -162,12 +164,16 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
+            // BorrowerID not found
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("Cannot find borrower");
+            // Book not found
             else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such book");
+            // Borrower is not allowed to check out any more books
             else if (e.getSQLState().equals(MAX_BOOKS_OUT_CONSTRAINT))
                 throw new ErrorMessage("Borrower has reached checkout limit");
+            // Book is already checked out
             else if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
                 throw new ErrorMessage("Book already checked out");
             else
@@ -203,6 +209,7 @@ public class Database
                     from book_info
                     where call_number = :callNumber
             };
+            // Calculate the number of days late
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
             Date currentDate = new Date(now.getTimeInMillis());
@@ -211,6 +218,7 @@ public class Database
             #sql { delete from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
+            // Assess fine if book is overdue
             if (daysLate > 0) {
                 BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
                     setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -225,6 +233,7 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
+            // Book not found in checked_out
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("Book not out");
             else
@@ -253,10 +262,12 @@ public class Database
                 from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
+            // Calculate the amount of days late
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
             Date currentDate = new Date(now.getTimeInMillis());
             int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
+            // Book if overdue and cannot be renewed
             if (daysLate > 0)
             {
                 rollback();
@@ -264,6 +275,7 @@ public class Database
                     " days and cannot be renewed");
             }
             else {
+                // Calculate the correct due date
                 #sql { select category.checkout_period
                     into :checkoutPeriod
                     from category join borrower
@@ -273,6 +285,7 @@ public class Database
                 Calendar cal = Calendar.getInstance();
                 cal.add(cal.DAY_OF_YEAR, deltaDate + checkoutPeriod);
                 Date newDateDue = new Date(cal.getTimeInMillis());
+                // Update the due date to the new due date
                 #sql { update checked_out
                     set date_due = :newDateDue
                     where call_number = :callNumber and copy_number = :copyNumber
@@ -283,6 +296,7 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
+            // Book not found in checked_out
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("Book not out");
             else
@@ -734,6 +748,7 @@ public class Database
         catch(SQLException e)
         {
             rollback();
+            // Book not found in database
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such book");
             else
@@ -767,9 +782,9 @@ public class Database
         catch(SQLException e)
         {
             rollback();
+            // Category not found in database
             if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR)
-                throw new ErrorMessage(
-                    "Category name is the same as an existing category");
+                throw new ErrorMessage("Category name is the same as an existing category");
             else
                 throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
@@ -802,6 +817,7 @@ public class Database
         }
         catch(SQLException e)
         {
+            // Category not found in database
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such category");
             else
@@ -866,6 +882,7 @@ public class Database
         catch(SQLException e)
         {
             rollback();
+            // Borrower still references this row
             if (e.getMessage().indexOf(BORROWER_CATEGORY_FOREIGN_CONSTRAINT) >= 0)
                 throw new ErrorMessage("There are still borrowers in this category");
             else
@@ -896,6 +913,7 @@ public class Database
             #sql { insert into borrower
                 values(:borrowerID, :lastName, :firstName, :category)
             };
+            // Insert all phone numbers
             Iterator phonesIterator = phones.iterator();
             while (phonesIterator.hasNext()) {
                 String newPhone = (String) phonesIterator.next();
@@ -908,11 +926,14 @@ public class Database
         catch(SQLException e) {
             rollback();
             if (e.getErrorCode() == DUPLICATE_KEY_SQL_ERROR) {
+                // Duplicate phone numbers entered
                 if (e.getMessage().indexOf(BORROWER_PHONE_TABLE_NAME) >= 0)
                     throw new ErrorMessage("Duplicate phone number");
+                // borrowerID already in the database
                 else
                     throw new ErrorMessage("Borrower already exists");
             }
+            // Category not found in the database
             else if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE))
                 throw new ErrorMessage("No such category");
             else
@@ -945,6 +966,7 @@ public class Database
                 phoneNumber = null;
             Object [] values = new Object[5];
             values[0] = borrowerID;
+            // get all phone number for borrower
             #sql cursor = { select phone
                 from borrower_phone
                 where borrower_id = :borrowerID
@@ -971,6 +993,7 @@ public class Database
             return values;
         }
         catch(SQLException e) {
+            // borrowerID not found in database
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
             else
@@ -1010,6 +1033,7 @@ public class Database
                     category_name = :newCategory
                 where borrower_id = :borrowerID
             };
+            // Delete phone numbers not found in newPhones
             Iterator originalPhonesIterator = originalPhones.iterator();
             Iterator newPhonesIterator = newPhones.iterator();
             while (originalPhonesIterator.hasNext()) {
@@ -1020,6 +1044,7 @@ public class Database
                             and phone = :phoneNumber
                     };
             }
+            // Insert new phone numbers not already int the database
             while (newPhonesIterator.hasNext()) {
                 String phoneNumber = (String) newPhonesIterator.next();
                 if (!originalPhones.contains(phoneNumber))
@@ -1032,11 +1057,14 @@ public class Database
         catch(SQLException e) {
             rollback();
             if (e.getSQLState().equals(IMPROPER_FOREIGN_KEY_SQL_STATE)) {
+                // Duplicate phone numbers
                 if (e.getMessage().indexOf(BORROWER_PHONE_TABLE_NAME) >= 0)
                     throw new ErrorMessage("Duplicate phone number");
+                // Categery not found in database
                 else
                     throw new ErrorMessage("No such category");
             }
+            // borrowerID not found in database
             else if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
             else
@@ -1062,8 +1090,10 @@ public class Database
         }
         catch(SQLException e) {
             rollback();
+            // borrowerID does not match any in the database
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such borrower");
+            // there is a reference to borrowerID in checked_out
             else if (e.getSQLState().equals(FOREIGN_KEY_REFERENCE_SQL_STATE))
                 throw new ErrorMessage("borrower has books checked out");
             else
@@ -1461,7 +1491,6 @@ public class Database
         {
             FinesReportCursor cursor;
 
-
             #sql cursor = { select Borrower.last_name,
                 Borrower.first_name,Borrower_phone.phone,
                 SUM(Fine.amount) as total_fine
@@ -1489,7 +1518,7 @@ public class Database
             cursor.close();
         }
         catch(SQLException e) {
-                throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
         }
         finally
         {
