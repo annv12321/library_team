@@ -1241,7 +1241,7 @@ public class Database
             String [] BOOKS_REPORT_HEADINGS =
                 { "Call Number", "Title", "Author", "Format", "# copies" };
             int [] BOOKS_REPORT_COLUMN_WIDTHS =
-                { 22, 52, 22, 4, 5 };
+                { 22, 52, 22, 10, 10 };
             boolean [] BOOKS_REPORT_REPEAT_COLUMNS =
                 { true, true, false, true, true };
 
@@ -1290,7 +1290,7 @@ public class Database
             String [] COPIES_REPORT_HEADINGS =
                 {"Bar Code", "Call Number", "Copy #", "Title"};
             int [] COPIES_REPORT_COLUMN_WIDTHS =
-                {10, 20, 5, 50};
+                {10, 20, 10, 50};
             produceReport(stream,
                               "Book Copies Report",
                               COPIES_REPORT_HEADINGS,
