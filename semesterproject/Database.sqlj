@@ -1183,20 +1183,23 @@ public class Database
      */
     public void payFine(String borrowerID, Fine fine) throws ErrorMessage
     {
-        // try {
-        //     #sql { delete from fine
-        //         where borrower_id = :borrowerID and
-        //             title = :Fine. and
-        //             date_due = :Fine.dateDue and
-        //             date_returned = :Fine.dateReturned and
-        //             amount = :Fine.amount
-        //     };
-        //     #sql { commit };
-        // }
-        // catch(SQLException e) {
-        //     rollback();
-        //     throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
-        // }
+        try {
+            String [] fineValues = fine.getValues();
+            Date dateDue = fine.getDateDue();
+            BigDecimal amount = fine.getAmountDue();
+            String title = fineValues[0];
+            #sql { delete from fine
+                where borrower_id = :borrowerID and
+                    date_due = :dateDue and
+                    title = :title and
+                    amount = :amount
+            };
+            #sql { commit };
+        }
+        catch(SQLException e) {
+            rollback();
+            throw new ErrorMessage("Unexpected SQL error " + e.getMessage());
+        }
     }
 
     /* ************************************************************************
