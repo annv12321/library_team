@@ -2,9 +2,11 @@
 ! Appropriate commands for inserting data into database
 ! Inserting books/items correctly
 AK CD.12 "Midsummer's Night Dream" {"William Shakespeare"} HC {"Fairy" "Mischief" "Summer" "Love"}
+! Inserting copies into the database
 AK CD.12
 AK CD.12
 AK CD.12
+! Inserting more books/items correctly
 AK QW.897 "Mere Christianity" {"C.S. Lewis"} SC {"Christian" "Allegory" "Theology"}
 AK SD.90 "A Guide to Good Eggs" {"Barefoot Contessa" "Guy Fieri"} CD {"Cooking" "Breakfast" "Good"}
 AK 86685 "Love's Labors Found" {"David Tennant"} SC {"Time-Travel" "History" "Shakespeare"}
@@ -16,11 +18,20 @@ AK BG.908 "MakeFile: A Comprehensive Guide" {"Anna Pelletier"} SC {"Coding" "Pro
 AK BH.78 "A Comprehensive Guide to Daisy Crowns" {"Daisy Crowne"} HC {"Activities" "Summer" "Dancing" "Happiness"}
 AK BS.100 "BS: An Art Form" {"Bradley Boutcher"} SC {"Art"}
 AK PS.90 "A Mother's Love" {"Norman Bates"} CD {"Horror"}
+! Adding book with duplicate keyword (should throw error)
+AK 80097 "DragonFyre" {"Edward Book"} MF {"Fantasy" "Dragons" "Adventure" "Dragons"}
+! Adding book with spaces in keyword (should throw error)
+AK 09976 "Data Structures" {"Russell Bjork"} PE {"An Essential for Learning"}
+! Adding book with duplicate author (should throw error)
+AK 81476 "Coding at Midnight" {"Krista Christie" "Anna Pelletier" "James Kempf" "Anna Pelletier"} SC {"Memoir"}
+! Adding a book with the incorrect format (should throw error)
+AK 75678 "Killing Time" SC {"Murder"} {"Norman Bates"}
 ! Inserting categories correctly
 AC Peon 3 15
-AC Peon 365 100
 AC BigCheese 100 10000
-AC BookWorm 15 500
+AC BookWorm 7 30
+! Adding a category with a duplicate name (Should throw error)
+AC Peon 365 100
 ! Inserting borrowers correctly
 AR 1234 "Bone" "Matilda" {"0000000000"} BookWorm
 AR 5678 "Granger" "Hermione" {"9789663002"} BookWorm
@@ -42,17 +53,29 @@ AR 2009 "Reid" "Spencer" {"1342717320"} Peon
 AR 2817 "Beaudelaire" "Klaus" {"2819192845"} Peon
 AR 3815 "Next" "Thursday" {"382152456"} Peon
 AR 8097 "Addams" "Wednesday" {"2457712157"} BigCheese
+! Adding a borrower with an undefined category_name(should throw error)
+AR 0020 "Beaudelaire" "Sonny" {"2819192845"} Orphan
+! Adding a borrower with a duplicate phone(should throw error)
+AR 0020 "Beaudelaire" "Veronica" {"2819192845" "2819192845"} BigCheese
 ! Editing book with everything right
 EK BG.908 "MakeFile: A Comprehensive Guide" {"Harold George"} SC {"Coding" "C++" "Programming" "Development"}
+! Editing book with a duplicate keyword (should throw error)
+EK BG.908 "MakeFile: A Comprehensive Guide" {"Harold George"} SC {"Programming" "C++" "Programming" "Development"}
+! Editing a book with duplicate author(should throw error)
+EK BH.78 "A Comprehensive Guide to Daisy Crowns" {"Daisy Crowne" "Daisy Crowne"} SC {"Activities" "Summer" "Dancing" "Happiness"}
 ! Editing book with added spaces (should throw error)
 EK QW.897 "Mere Christianity" {"C.S. Lewis"} HC {"I Love This Book"}
+! Editing book with incorrect format (should throw error)
+EK QW.897 "Mere Christianity" SC {"C.S. Lewis"}
+! Editing a non-existent book(should throw error)
+EK EEK.38 "Peonies are for Friends" {"Hugh McSorley"} CD {"Horror"}
 ! Editing category with everything right
 EC Peon 4 16
 ! Editing borrower with everything correct
 ER 1234 "Bone" "Matilda" {"1234414873"} BigCheese
 ER 2002 "Morgendorffer" "Daria" {"1234414873"} BookWorm
 ! Editing borrower with duplicate phone(should throw error)
-AR 1039 "Finch" "Scout" {"1046471439"} Peon
+ER 1039 "Finch" "Scout" {"1046471439"} Peon
 ! Editing non-existent borrower(should throw error)
 ER 1995 "Bowman" "Hattie" {"9087546378"} Peon
 ! Deleting existent book
@@ -61,11 +84,80 @@ DK PS.90 1
 DK PS.90 2
 ! Editing a non-existent category (should throw error)
 EC Goose 1 1
-! Editing a non-existent borrower (should throw error)
-ER 0000 "Killian" "Hatter" {"0100101001"} BookWorm
+! Adding borrower with duplicate ID (should throw error)
+AR 2002 "Killian" "Hatter" {"0100101001"} BookWorm
 ! Deleting filled category (should throw error)
 DC BookWorm
-! Deleting non-existant category (should throw error)
+! Editing a borrower to undefined category (should throw error)
+ER 2817 "Beaudelaire" "Klaus" {"2819192845"} Orphan
+! Deleting non-existent category (should throw error)
 DC Haberdasher
-! Deleting non-existant borrower (should throw error)
+! Deleting non-existent borrower (should throw error)
 DR 1995
+! Create a category to delete
+AC Goose 1 1
+! Deleting said category
+DC Goose
+! Delete borrower (should also delete fines associated with the borrower)
+DR 2519
+! Checking out books
+C 1234 CD.12 1
+C 1234 QW.897 1
+C 1234 BS.100 1
+C 1234 87965 1
+C 1234 12 1
+C 1234 BG.908 1
+C 1234 09776 1
+C 3815 SD.90 1
+! Checking out too many books for category (should throw error)
+C 1234 77674 1
+! Returning books
+R CD.12 1
+R QW.897 1
+R BS.100 1
+! Deleting checked out book (should get rid of it in book table and checked out table)
+DK 12 1
+! Checking out book to non-existent borrower (should throw error)
+C 1995 CD.12 2
+! Checking out non-existent book (should throw error)
+C 1234 KLE.67 1
+! Checking out book that is already checked out
+C 1970 BG.908 1
+! Returning a book that isn't out (should throw error)
+R 77674 1
+! Renewing a book that isn't out (should throw error)
+W 77674 1
+! Date Modification
++ 29
+! Renewing a book
+W 09776 1
+! Date Modification
++ 2
+! Renewing an overdue book (should throw an error)
+W 87965 1
+! Returning overdue books (adds the book to the fines table)
+R 87965 1
+R SD.90 1
+! Get fine information for borrowers
+G 1234
+G 3815
+! Delete book with a fine (fine remains in fine table)
+DK 87965 1
+! Delete borrower with a fine (removes borrower from borrower table and fine from fine table)
+DR 3815
+! Deleting borrower with books checked out (should throw error)
+DR 1234
+! Borrower pays a fine
+F 1234 "Kombucha: Health Craze or Legitimate Medicine?" 2017-06-08
+! Non-existent borrower pays fine (should throw error)
+F 1995 "Peonies are for Friends" 2017-06-08
+! Borrower pays non-existent fine (should throw error)
+F 1234 "Kombucha: Health Craze or Legitimate Medicine?" 2017-06-08
+! Printing reports
+PB
+Pb
+PK
+PC
+PR
+PF
+PO
