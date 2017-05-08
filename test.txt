@@ -66,6 +66,6 @@ ER 0000 "Killian" "Hatter" {"0100101001"} BookWorm
 ! Deleting filled category (should throw error)
 DC BookWorm
 ! Deleting non-existant category (should throw error)
-DC Haberdasher
+DC Haberdash
 ! Deleting non-existant borrower (should throw error)
 DR 1995
