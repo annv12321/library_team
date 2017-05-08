@@ -213,17 +213,20 @@ public class Database
             Calendar now = Calendar.getInstance();
             now.add(now.DAY_OF_YEAR, deltaDate);
             Date currentDate = new Date(now.getTimeInMillis());
-            int daysLate = (int) ((currentDate.getTime() - dateDue.getTime()) / 1000 / 60 / 60 / 24);
+            int daysLate = (int) ((currentDate.getTime() - dateDue.getTime())
+                    / 1000 / 60 / 60 / 24);
 
             #sql { delete from checked_out
                 where call_number = :callNumber and copy_number = :copyNumber
             };
             // Assess fine if book is overdue
             if (daysLate > 0) {
-                BigDecimal fineAmount = new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
+                BigDecimal fineAmount =
+                    new BigDecimal(Fine.DAILY_FINE_RATE * .01 * daysLate).
                     setScale(2, BigDecimal.ROUND_HALF_UP);
                 #sql { insert into fine
-                    values(:borrowerID, :bookTitle, :dateDue, :currentDate, :fineAmount)
+                    values(:borrowerID, :bookTitle, :dateDue,
+                        :currentDate, :fineAmount)
                 };
                 #sql { commit };
                 throw new ErrorMessage("Book is overdue " + daysLate + " days " +
@@ -237,7 +240,8 @@ public class Database
             if (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("Book not out");
             else
-                throw new ErrorMessage("Unexpected SQL error " + e.getMessage() + e.getSQLState());
+                throw new ErrorMessage("Unexpected SQL error "
+                            + e.getMessage() + e.getSQLState());
         }
     }
 
