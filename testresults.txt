@@ -1,0 +1,332 @@
+krista@habakkuk:~/cps352/project2/library_team$ java -jar project.jar
+Comment: ! Some testing data
+Comment: ! Appropriate commands for inserting data into database
+Comment: ! Inserting books/items correctly
+Add book: CD.12 Midsummer's Night Dream { William Shakespeare } HC { Fairy Mischief Summer Love }
+Comment: ! Inserting copies into the database
+Add copy of: CD.12
+Add copy of: CD.12
+Add copy of: CD.12
+Comment: ! Inserting more books/items correctly
+Add book: QW.897 Mere Christianity { C.S. Lewis } SC { Christian Allegory Theology }
+Add book: SD.90 A Guide to Good Eggs { Barefoot Contessa Guy Fieri } CD { Cooking Breakfast Good }
+Add book: 86685 Love's Labors Found { David Tennant } SC { Time-Travel History Shakespeare }
+Add book: 77674 Get Better, Not Just Fine { Ana Pelter } SC { Self-Help Injury Death }
+Add book: 09776 Krista Christie: the Icon, the Hero { James Kempf } HC { Coding Management Biography }
+Add book: 87965 Kombucha: Health Craze or Legitimate Medicine? { Catie Gordon } SC { Health Wellness Happiness Kombucha }
+Add book: 12 Taming the Shrew { William Shakespeare } SC { Banter Romance Adventure Society }
+Add book: BG.908 MakeFile: A Comprehensive Guide { Anna Pelletier } SC { Coding Programming Development }
+Add book: BH.78 A Comprehensive Guide to Daisy Crowns { Daisy Crowne } HC { Activities Summer Dancing Happiness }
+Add book: BS.100 BS: An Art Form { Bradley Boutcher } SC { Art }
+Add book: PS.90 A Mother's Love { Norman Bates } CD { Horror }
+Comment: ! Adding book with duplicate keyword (should throw error)
+Add book: 80097 DragonFyre { Edward Book } MF { Fantasy Dragons Adventure Dragons }
+Exception: Duplicate keyword for this book
+Comment: ! Adding book with spaces in keyword (should throw error)
+Add book: 09976 Data Structures { Russell Bjork } PE { An Essential for Learning }
+Exception: Invalid format
+Comment: ! Adding book with duplicate author (should throw error)
+Add book: 81476 Coding at Midnight { Krista Christie Anna Pelletier James Kempf Anna Pelletier } SC { Memoir }
+Exception: Duplicate author for this book
+Comment: ! Adding a book with the incorrect format (should throw error)
+Add book: 75678 Killing Time { Norman Bates } book { Murder }
+Exception: Invalid format
+Comment: ! Inserting categories correctly
+Add category: Peon 3 2
+Add category: BigCheese 30 15
+Add category: BookWorm 7 7
+Comment: ! Adding a category with a duplicate name (Should throw error)
+Add category: Peon 365 100
+Exception: Category name is the same as an existing category
+Comment: ! Inserting borrowers correctly
+Add borrower: 1234 Bone Matilda { 0000000000 } BookWorm
+Add borrower: 5678 Granger Hermione { 9789663002 } BookWorm
+Add borrower: 7890 Homme Belle { 1234563662 1238828663 } BookWorm
+Add borrower: 5743 Wormwood Matilda { 9088822363 } BookWorm
+Add borrower: 6989 Bennet Elizabeth { 5357056222 } BookWorm
+Add borrower: 6786 March Jo { 193387964 9-07696 } BookWorm
+Add borrower: 0909 Chambers Diane { 8236288111 } BookWorm
+Add borrower: 0997 Giles Rupert { 5492532948 } BookWorm
+Add borrower: 7685 Rosenberg Willow { 4271455561 } BookWorm
+Add borrower: 1984 Ingalls Laura { 4442271046 } BookWorm
+Add borrower: 2002 Morgendorffer Daria { 5479048131 } BookWorm
+Add borrower: 1039 Finch Scout { 1046471439 } BookWorm
+Add borrower: 1970 Monsoon Saffron { 1618310548 } BookWorm
+Add borrower: 1908 Shirley Anne { 2917424229 } BookWorm
+Add borrower: 2008 Tilling Despereaux { 1234567809 } BigCheese
+Add borrower: 2519 Morland Catherine { 1234516721 } Peon
+Add borrower: 2009 Reid Spencer { 1342717320 } Peon
+Add borrower: 2817 Beaudelaire Klaus { 2819192845 } Peon
+Add borrower: 3815 Next Thursday { 382152456 } Peon
+Add borrower: 8097 Addams Wednesday { 2457712157 } BigCheese
+Comment: ! Adding a borrower with an undefined category_name(should throw error)
+Add borrower: 0020 Beaudelaire Sonny { 2819192845 } Orphan
+Exception: No such category
+Comment: ! Adding a borrower with a duplicate phone(should throw error)
+Add borrower: 0020 Beaudelaire Veronica { 2819192845 2819192845 } BigCheese
+Exception: Duplicate phone number
+Comment: ! Editing book with everything right
+Edit book: BG.908 MakeFile: A Comprehensive Guide { Harold George } SC { Coding C++ Programming Development }
+Old values: BG.908 (information applies to all copies of this book) (information applies to all copies of this book) MakeFile: A Comprehensive Guide                    { Anna Pelletier       } SC { Coding Development Programming }
+Comment: ! Editing book with a duplicate keyword (should throw error)
+Edit book: BG.908 MakeFile: A Comprehensive Guide { Harold George } SC { Programming C++ Programming Development }
+Old values: BG.908 (information applies to all copies of this book) (information applies to all copies of this book) MakeFile: A Comprehensive Guide                    { Harold George        } SC { C++ Coding Development Programming }
+Comment: ! Editing a book with duplicate author(should throw error)
+Edit book: BH.78 A Comprehensive Guide to Daisy Crowns { Daisy Crowne Daisy Crowne } SC { Activities Summer Dancing Happiness }
+Old values: BH.78 (information applies to all copies of this book) (information applies to all copies of this book) A Comprehensive Guide to Daisy Crowns              { Daisy Crowne         } HC { Activities Dancing Happiness Summer }
+Exception: Duplicate author for this book
+Comment: ! Editing book with added spaces (should throw error)
+Edit book: QW.897 Mere Christianity { C.S. Lewis } HC { I Love This Book }
+Old values: QW.897 (information applies to all copies of this book) (information applies to all copies of this book) Mere Christianity                                  { C.S. Lewis           } SC { Allegory Christian Theology }
+Exception: A keyword contains a space
+Comment: ! Editing book with incorrect format (should throw error)
+Edit book: QW.897 Mere Christianity { C.S. Lewis } book { Faith }
+Old values: QW.897 (information applies to all copies of this book) (information applies to all copies of this book) Mere Christianity                                  { C.S. Lewis           } SC { Allegory Christian Theology }
+Exception: Invalid format
+Comment: ! Editing a non-existent book(should throw error)
+Edit book: EEK.38 Peonies are for Friends { Hugh McSorley } CD { Horror }
+Exception: No such book
+Comment: ! Editing category with everything right
+Edit category: Peon 4 16
+Old values: Peon 3 2
+Comment: ! Editing borrower with everything correct
+Edit borrower: 1234 Bone Matilda { 1234414873 } BigCheese
+Old values: 1234 Bone                 Matilda              { 0000000000           } BookWorm
+Edit borrower: 2002 Morgendorffer Daria { 1234414873 } BookWorm
+Old values: 2002 Morgendorffer        Daria                { 5479048131           } BookWorm
+Comment: ! Editing borrower with duplicate phone(should throw error)
+Edit borrower: 1039 Finch Scout { 1046471439 } Peon
+Old values: 1039 Finch                Scout                { 1046471439           } BookWorm
+Comment: ! Editing non-existent borrower(should throw error)
+Edit borrower: 1995 Bowman Hattie { 9087546378 } Peon
+Exception: No such borrower
+Comment: ! Deleting existent book
+Delete book: PS.90 1
+Comment: ! Deleting non-existent copy of a book(should throw error)
+Delete book: PS.90 2
+Exception: No such book
+Comment: ! Editing a non-existent category (should throw error)
+Edit category: Goose 1 1
+Exception: No such category
+Comment: ! Adding borrower with duplicate ID (should throw error)
+Add borrower: 2002 Killian Hatter { 0100101001 } BookWorm
+Exception: Borrower already exists
+Comment: ! Deleting filled category (should throw error)
+Delete category: BookWorm
+Exception: There are still borrowers in this category
+Comment: ! Editing a borrower to undefined category (should throw error)
+Edit borrower: 2817 Beaudelaire Klaus { 2819192845 } Orphan
+Old values: 2817 Beaudelaire          Klaus                { 2819192845           } Peon
+Exception: No such category
+Comment: ! Deleting non-existent category (should throw error)
+Delete category: Haberdasher
+Exception: Unexpected SQL error DB2 SQL Error: SQLCODE=-302, SQLSTATE=22001, SQLERRMC=null, DRIVER=3.66.46
+Comment: ! Deleting non-existent borrower (should throw error)
+Delete borrower: 1995
+Exception: No such borrower
+Comment: ! Create a category to delete
+Add category: Goose 1 1
+Comment: ! Deleting said category
+Delete category: Goose
+Comment: ! Checking out books
+Check out book: 1234 CD.12 1
+Due on : 2017-06-07
+Check out book: 1234 QW.897 1
+Due on : 2017-06-07
+Check out book: 1234 BS.100 1
+Due on : 2017-06-07
+Check out book: 1234 87965 1
+Due on : 2017-06-07
+Check out book: 1234 12 1
+Due on : 2017-06-07
+Check out book: 1234 BG.908 1
+Due on : 2017-06-07
+Check out book: 1234 09776 1
+Due on : 2017-06-07
+Check out book: 3815 SD.90 1
+Due on : 2017-05-12
+Comment: ! Checking out too many books for category (should throw error)
+Check out book: 1234 77674 1
+Due on : 2017-06-07
+Comment: ! Returning books
+Return book: CD.12 1
+Return book: QW.897 1
+Return book: BS.100 1
+Comment: ! Deleting checked out book (should get rid of it in book table and checked out table)
+Delete book: 12 1
+Comment: ! Checking out book to non-existent borrower (should throw error)
+Check out book: 1995 CD.12 2
+Exception: Cannot find borrower
+Comment: ! Checking out non-existent book (should throw error)
+Check out book: 3815 KLE.67 1
+Exception: No such book
+Comment: ! Checking out book that is already checked out
+Check out book: 1970 BG.908 1
+Exception: Book already checked out
+Comment: ! Returning a book that isn't out (should throw error)
+Return book: 77674 1
+Comment: ! Renewing a book that isn't out (should throw error)
+Renew book: 77674 1
+Exception: Book not out
+Comment: ! Date Modification
+Change date to: 2017-06-06
+Comment: ! Renewing a book
+Renew book: 09776 1
+Now due on: 2017-07-06
+Comment: ! Date Modification
+Change date to: 2017-06-08
+Comment: ! Renewing an overdue book (should throw an error)
+Renew book: 87965 1
+Exception: Book is overdue 1 days and cannot be renewed
+Comment: ! Returning overdue books (adds the book to the fines table)
+Return book: 87965 1
+Exception: Book is overdue 1 days - a fine of $0.05 has been assessed
+Return book: SD.90 1
+Exception: Book is overdue 27 days - a fine of $1.35 has been assessed
+Comment: ! Get fine information for borrowers
+Get fines for borrower: 1234
+: Kombucha: Health Craze or Legitimate Medicine?     2017-06-07 2017-06-08 $   0.05
+End of fines for this borrower:
+Get fines for borrower: 3815
+: A Guide to Good Eggs                               2017-05-12 2017-06-08 $   1.35
+End of fines for this borrower:
+Comment: ! Delete book with a fine (fine remains in fine table)
+Delete book: 87965 1
+Comment: ! Delete borrower with a fine (removes borrower from borrower table and fine from fine table)
+Delete borrower: 3815
+Comment: ! Deleting borrower with books checked out (should throw error)
+Delete borrower: 1234
+Exception: borrower has books checked out
+Comment: ! Borrower pays a fine
+Pay fine: 1234 Kombucha: Health Craze or Legitimate Medicine? 2017-06-08
+Comment: ! Non-existent borrower pays fine (should throw error)
+Pay fine: 1995 Peonies are for Friends 2017-06-08
+Comment: ! Borrower pays non-existent fine (should throw error)
+Pay fine: 1234 Kombucha: Health Craze or Legitimate Medicine? 2017-06-08
+Comment: ! Printing reports
+
+Book Information Report
+_______________________
+
+Call Number           Title                                               Author                Format    # copies
+___________           _____                                               ______                ______    ________
+
+09776                 Krista Christie: the Icon, the Hero                 James Kempf           HC        1
+77674                 Get Better, Not Just Fine                           Ana Pelter            SC        1
+86685                 Love's Labors Found                                 David Tennant         SC        1
+BG.908                MakeFile: A Comprehensive Guide                     Harold George         SC        1
+BH.78                 A Comprehensive Guide to Daisy Crowns               Daisy Crowne          HC        1
+BS.100                BS: An Art Form                                     Bradley Boutcher      SC        1
+CD.12                 Midsummer's Night Dream                             William Shakespeare   HC        4
+QW.897                Mere Christianity                                   C.S. Lewis            SC        1
+SD.90                 A Guide to Good Eggs                                Barefoot Contessa     CD        1
+                                                                          Guy Fieri
+
+Book Copies Report
+__________________
+
+Bar Code  Call Number         Copy #    Title
+________  ___________         ______    _____
+
+1         CD.12               1         Midsummer's Night Dream
+2         CD.12               2         Midsummer's Night Dream
+3         CD.12               3         Midsummer's Night Dream
+4         CD.12               4         Midsummer's Night Dream
+5         QW.897              1         Mere Christianity
+6         SD.90               1         A Guide to Good Eggs
+7         86685               1         Love's Labors Found
+8         77674               1         Get Better, Not Just Fine
+9         09776               1         Krista Christie: the Icon, the Hero
+12        BG.908              1         MakeFile: A Comprehensive Guide
+13        BH.78               1         A Comprehensive Guide to Daisy Crowns
+14        BS.100              1         BS: An Art Form
+
+Book Keywords Report
+____________________
+
+Keyword             Call Number         Title
+_______             ___________         _____
+
+Activities          BH.78               A Comprehensive Guide to Daisy Crowns
+Allegory            QW.897              Mere Christianity
+Art                 BS.100              BS: An Art Form
+Biography           09776               Krista Christie: the Icon, the Hero
+Breakfast           SD.90               A Guide to Good Eggs
+C++                 BG.908              MakeFile: A Comprehensive Guide
+Christian           QW.897              Mere Christianity
+Coding              09776               Krista Christie: the Icon, the Hero
+Cooking             SD.90               A Guide to Good Eggs
+Dancing             BH.78               A Comprehensive Guide to Daisy Crowns
+Death               77674               Get Better, Not Just Fine
+Development         BG.908              MakeFile: A Comprehensive Guide
+Fairy               CD.12               Midsummer's Night Dream
+Good                SD.90               A Guide to Good Eggs
+Happiness           BH.78               A Comprehensive Guide to Daisy Crowns
+History             86685               Love's Labors Found
+Injury              77674               Get Better, Not Just Fine
+Love                CD.12               Midsummer's Night Dream
+Management          09776               Krista Christie: the Icon, the Hero
+Mischief            CD.12               Midsummer's Night Dream
+Programming         BG.908              MakeFile: A Comprehensive Guide
+Self-Help           77674               Get Better, Not Just Fine
+Shakespeare         86685               Love's Labors Found
+Summer              BH.78               A Comprehensive Guide to Daisy Crowns
+Summer              CD.12               Midsummer's Night Dream
+Theology            QW.897              Mere Christianity
+Time-Travel         86685               Love's Labors Found
+
+Categories Report
+_________________
+
+Category Name  Checkout Period  Maximum Books Out
+_____________  _______________  _________________
+
+BigCheese      30               15
+BookWorm       7                7
+Peon           4                16
+
+Borrowers Report
+________________
+
+Borrower ID    Last Name           First Name          Phone #             Category
+___________    _________           __________          _______             ________
+
+8097           Addams              Wednesday           2457712157          BigCheese
+2817           Beaudelaire         Klaus               2819192845          Peon
+6989           Bennet              Elizabeth           5357056222          BookWorm
+1234           Bone                Matilda             1234414873          BigCheese
+0909           Chambers            Diane               8236288111          BookWorm
+1039           Finch               Scout               1046471439          Peon
+0997           Giles               Rupert              5492532948          BookWorm
+5678           Granger             Hermione            9789663002          BookWorm
+7890           Homme               Belle               1234563662          BookWorm
+                                                       1238828663
+1984           Ingalls             Laura               4442271046          BookWorm
+6786           March               Jo                  193387964           BookWorm
+                                                       9-07696
+1970           Monsoon             Saffron             1618310548          BookWorm
+2002           Morgendorffer       Daria               1234414873          BookWorm
+2519           Morland             Catherine           1234516721          Peon
+2009           Reid                Spencer             1342717320          Peon
+7685           Rosenberg           Willow              4271455561          BookWorm
+1908           Shirley             Anne                2917424229          BookWorm
+2008           Tilling             Despereaux          1234567809          BigCheese
+5743           Wormwood            Matilda             9088822363          BookWorm
+
+Fines Report
+____________
+
+Last Name           First Name          Phone #             Total Fines
+_________           __________          _______             ___________
+
+Bone                Matilda             1234414873          0.05
+
+Overdue Books Report
+____________________
+
+Last Name           First Name          Title                                             Date Due
+_________           __________          _____                                             ________
+
+Bone                Matilda             MakeFile: A Comprehensive Guide                   2017-06-07
+                                        Krista Christie: the Icon, the Hero               2017-07-06
+krista@habakkuk:~/cps352/project2/library_team$
