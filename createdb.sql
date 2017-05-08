@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 --- Modified by: Anna Pelletier, Krista Christie and James Kempf
+=======
+-- Modified by: Anna Pelletier, Krista Christie and James Kempf
+>>>>>>> 71b8b8fae3e81067d6b06044f5fc0cfc0bd5240d
 
 create table Category(
 	category_name char(10) not null,
@@ -14,8 +18,11 @@ create table Borrower(
 	category_name char(10) not null,
 	constraint borrower_key primary key(borrower_id),
 	constraint borrower_foreign foreign key(category_name) references Category
+<<<<<<< HEAD
 			on delete cascade
 
+=======
+>>>>>>> 71b8b8fae3e81067d6b06044f5fc0cfc0bd5240d
 );
 
 create table Borrower_phone(
@@ -34,8 +41,13 @@ create table Book_info(
 	constraint format_type check(format in ('HC', 'SC', 'CD', 'MF', 'PE'))
 );
 
+<<<<<<< HEAD
 --- The code supplied below for accession_number will cause it to be generated
 --- automatically when a new Book is added to the database
+=======
+-- The code supplied below for accession_number will cause it to be generated
+-- automatically when a new Book is added to the database
+>>>>>>> 71b8b8fae3e81067d6b06044f5fc0cfc0bd5240d
 
 create table Book(
 	call_number char(20) not null,
@@ -107,7 +119,10 @@ create trigger remove_book_info_when_no_copies
 	when (old_book.call_number not in (select Book.call_number from Book))
 	delete from book_info where book_info.call_number = old_book.call_number;
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 71b8b8fae3e81067d6b06044f5fc0cfc0bd5240d
 grant all on Category to user anna;
 grant all on Category to user james;
 grant all on Category to user bjork;
