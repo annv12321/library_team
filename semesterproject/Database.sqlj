@@ -884,7 +884,7 @@ public class Database
         {
             rollback();
             // Category not found in database
-            if (e.getMessage().equals(NO_ROW_SQL_STATE))
+            iif (e.getSQLState().equals(NO_ROW_SQL_STATE))
                 throw new ErrorMessage("No such category");
             // Borrower still references this row
             else if (e.getMessage().indexOf(BORROWER_CATEGORY_FOREIGN_CONSTRAINT) >= 0)
