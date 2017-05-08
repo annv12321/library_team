@@ -1566,7 +1566,7 @@ public class Database
                 { true, true, false, false };
 
             produceReport(stream,
-                          "Fines Report",
+                          "Overdue Books Report",
                           ODBOOKS_REPORT_HEADINGS,
                           ODBOOKS_REPORT_COLUMN_WIDTHS,
                           ODBOOKS_REPORT_REPEAT_COLUMNS,
