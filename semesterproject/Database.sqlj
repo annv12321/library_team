@@ -734,6 +734,7 @@ public class Database
      *          the operation fails.  Any failure results in no changes being
      *          made to the database
      */
+     // need to add in caascading delete to deal with checked out and fine
     public void deleteBook(String callNumber, short copyNumber) throws ErrorMessage
     {
         try
@@ -1083,6 +1084,7 @@ public class Database
      *          the operation fails.  Any failure results in no changes being
      *          made to the database
      */
+     // need to add a fine cascade when you delete a borrower
     public void deleteBorrower(String borrowerID) throws ErrorMessage
     {
         try {
